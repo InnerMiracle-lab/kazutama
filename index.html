@@ -420,16 +420,18 @@ hr{border:none;border-top:1px solid var(--line);margin:20px 0}
     </div>
   </div>
 
-  <!-- NotebookLM用データ出力 -->
-  <h2>鑑定データ出力（NotebookLM用）</h2>
-  <div class="card" id="nbSection">
-    <div class="sub" style="margin-bottom:10px">①〜⑥の鑑定データを生成してNotebookLMに貼り付けてください。</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-      <button id="nbGenBtn" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:15px;cursor:pointer">📋 鑑定データを生成</button>
-      <button id="nbCopyBtn" style="background:var(--btn);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 22px;font-size:15px;cursor:pointer;display:none">コピー</button>
-      <span id="nbCopyStatus" style="font-size:13px;color:var(--muted);padding-top:10px"></span>
+  <!-- NotebookLM用データ出力（フリー版は非表示） -->
+  <div style="display:none">
+    <h2>鑑定データ出力（NotebookLM用）</h2>
+    <div class="card" id="nbSection">
+      <div class="sub" style="margin-bottom:10px">①〜⑥の鑑定データを生成してNotebookLMに貼り付けてください。</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <button id="nbGenBtn" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:15px;cursor:pointer">📋 鑑定データを生成</button>
+        <button id="nbCopyBtn" style="background:var(--btn);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 22px;font-size:15px;cursor:pointer;display:none">コピー</button>
+        <span id="nbCopyStatus" style="font-size:13px;color:var(--muted);padding-top:10px"></span>
+      </div>
+      <textarea id="nbOutput" style="width:100%;min-height:320px;font-size:13px;line-height:1.8;padding:12px;border:1.5px solid var(--line);border-radius:12px;font-family:monospace;resize:vertical;display:none"></textarea>
     </div>
-    <textarea id="nbOutput" style="width:100%;min-height:320px;font-size:13px;line-height:1.8;padding:12px;border:1.5px solid var(--line);border-radius:12px;font-family:monospace;resize:vertical;display:none"></textarea>
   </div>
 
   <!-- 総合鑑定書 -->
