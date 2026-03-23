@@ -802,16 +802,12 @@ function renderTainai(birthYN, birthYZ, birthSy, currentSy, sex, birthTaio, birt
   const birthTaioLocal = birthTaio || new Set();
   const hakaiArrMonth = birthMonthBoard ? Array.from(birthMonthBoard.meta.hakai).sort((a,b)=>a-b).map(v=>NUMS[v]).join('・') : '';
   const taioArr = Array.from(birthTaioLocal).sort((a,b)=>a-b).map(v=>NUMS[v]).join('・');
-  // 準破壊：年でも月でも対応破壊（renderTainai内でローカル再構築）
-  const taioFromY2=new Set(); const taioFromM2=new Set();
-  if(birthMonthBoard){
-    const _yb={nums:numsArr(birthYN),meta:meta(numsArr(birthYN),birthYZ)};
-    const byF=new Set();if(_yb.meta.opp5Pos!=null)byF.add(_yb.meta.opp5Pos);if(_yb.meta.oppZPos!=null)byF.add(_yb.meta.oppZPos);
-    const bmF=new Set();if(birthMonthBoard.meta.opp5Pos!=null)bmF.add(birthMonthBoard.meta.opp5Pos);if(birthMonthBoard.meta.oppZPos!=null)bmF.add(birthMonthBoard.meta.oppZPos);
-    byF.forEach(f=>{const mv=birthMonthBoard.nums[f];if(!_yb.meta.hakai.has(mv))taioFromY2.add(mv);});
-    bmF.forEach(f=>{const yv=_yb.nums[f];if(!_yb.meta.hakai.has(yv))taioFromM2.add(yv);});
-  }
-  const junHakaiLocal=new Set([...taioFromY2].filter(v=>taioFromM2.has(v)));
+  // 波動用：年盤のみで対応破壊を再計算（波動流は年の数理のみで判定）
+  const taioFromY2=new Set();
+  {const _yb={nums:numsArr(birthYN),meta:meta(numsArr(birthYN),birthYZ)};
+   const byF=new Set();if(_yb.meta.opp5Pos!=null)byF.add(_yb.meta.opp5Pos);if(_yb.meta.oppZPos!=null)byF.add(_yb.meta.oppZPos);
+   byF.forEach(f=>{const mv=_yb.nums[f];if(!_yb.meta.hakai.has(mv))taioFromY2.add(mv);});}
+  const junHakaiLocal=new Set([...taioFromY2]);
   const junHakaiArr=Array.from(junHakaiLocal).sort((a,b)=>a-b).map(v=>NUMS[v]).join('・');
   desc.innerHTML =
     `生年盤: <b>${NUMS[birthYN]}${birthYZ}</b>${chisuuStr}　周期: <b>${cycle}年</b>　` +
@@ -1170,7 +1166,10 @@ function render(){
   // 対応破壊：同じ場が相手盤でも破壊場の場合は除外
   byFields.forEach(f=>{const mv=birthMonthBoard.nums[f];if(!birthYearHakai.has(mv)&&!bmFields.has(f))birthTaioSet.add(mv);});
   bmFields.forEach(f=>{const yv=birthYearBoard.nums[f];if(!birthYearHakai.has(yv)&&!byFields.has(f))birthTaioSet.add(yv);});
-  renderTainai(ymBirth.yN, ymBirth.yZ, ymBirth.sy, currentSy, sex, birthTaioSet, birthMonthBoard);
+  // 波動用：年盤のみの対応破壊（月盤は使わない）
+  const birthTaioYear = new Set();
+  byFields.forEach(f=>{const mv=birthYearBoard.nums[f];if(!birthYearHakai.has(mv))birthTaioYear.add(mv);});
+  renderTainai(ymBirth.yN, ymBirth.yZ, ymBirth.sy, currentSy, sex, birthTaioYear, birthMonthBoard);
   const isPreSetsubun=(ym.sy<y)||(ym.sy===y&&ym.sm<m);
   const dp=chooseDay(sy,sm,sd);const day=dp.chosen;
   const base={yN:ym.yN,yZ:ym.yZ,mN:ym.mN,mZ:ym.mZ,dN:day.n,dZ:day.z,surface:[ym.yN,r9n(sm),r9n(sd)]};
