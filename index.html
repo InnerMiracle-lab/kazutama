@@ -240,6 +240,8 @@ hr{border:none;border-top:1px solid var(--line);margin:20px 0}
   body { background: white; }
   .card { box-shadow: none; border: none; }
 }
+
+#kanteiSection,#tainaiSideMemo,.tainai-side-memo,.tainai-copy-btn{display:none!important}
 </style>
 </head>
 <body>
@@ -434,34 +436,7 @@ hr{border:none;border-top:1px solid var(--line);margin:20px 0}
     </div>
   </div>
 
-  <!-- 総合鑑定書 -->
-  <h2>総合鑑定書</h2>
-  <div class="card" id="kanteiSection">
-    <div class="kantei-toolbar">
-      <span id="kanteiSaveStatus" class="kantei-status"></span>
-      <button id="kanteiPdfBtn" class="kantei-btn">📄 PDFで保存</button>
-      <button id="kanteiClearBtn" class="kantei-btn kantei-btn-sub">クリア</button>
-    </div>
-    <div class="kantei-grid">
-      <!-- 左：鑑定書テキストエリア -->
-      <div class="kantei-main">
-        <div class="kantei-section-label">◆ 総合鑑定</div>
-        <textarea id="kanteiText" class="kantei-textarea" placeholder="総合的な鑑定内容を記入してください..."></textarea>
-        <div class="kantei-section-label" style="margin-top:12px">◆ 波動期間メモ</div>
-        <div id="tainaiMemoArea"></div>
-      </div>
-      <!-- 右：鑑定書プレビュー -->
-      <div class="kantei-preview" id="kanteiPreview">
-        <div class="kantei-preview-header">
-          <div class="kantei-preview-name" id="previewName">氏名</div>
-          <div class="kantei-preview-date" id="previewDate">生年月日</div>
-        </div>
-        <div class="kantei-preview-body" id="previewBody"></div>
-        <div class="kantei-preview-memo" id="previewMemo"></div>
-      </div>
-    </div>
-  </div>
-</div>
+  
 
 <script>
 const HADO_PARA = {};
@@ -1009,11 +984,7 @@ function renderTainai(birthYN, birthYZ, birthSy, currentSy, sex, birthTaio, birt
       ta.style.minHeight = approxHeight + 'px';
       ta.oninput = () => {
         sideData[blkKey] = ta.value;
-        try {
-          localStorage.setItem(sideKey, JSON.stringify(sideData));
-          const st = document.getElementById('kanteiSaveStatus');
-          if (st) { st.textContent = '保存済み ✓'; setTimeout(()=>st.textContent='', 2000); }
-        } catch(e) {}
+        try { localStorage.setItem(sideKey, JSON.stringify(sideData)); } catch(e) {}
       };
 
       body.appendChild(ta);
@@ -1023,146 +994,12 @@ function renderTainai(birthYN, birthYZ, birthSy, currentSy, sex, birthTaio, birt
     });
   }
 
-  // 波動ブロックメモ欄を生成（下部）
-  const memoArea = document.getElementById('tainaiMemoArea');
-  if (memoArea) {
-    memoArea.innerHTML = '';
-    const storageKey = `tainaiMemo_${birthYN}_${birthYZ}_${birthSy}`;
-    let memoData = {};
-    try { memoData = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch(e){}
-
-    // ブロックごとにメモ欄を作成
-    const blkRows = rows.filter(r => r.blkStart);
-    blkRows.forEach((r, bi) => {
-      const blkKey = `blk_${r.calYear}`;
-      const nextBlk = blkRows[bi+1];
-      const yearRows = rows.filter(rr => rr.calYear >= r.calYear && (!nextBlk || rr.calYear < nextBlk.calYear));
-
-      const block = document.createElement('div');
-      block.className = 'tainai-memo-block';
-
-      // ヘッダー（クリックで開閉）
-      const head = document.createElement('div');
-      head.className = 'tainai-memo-head';
-      const blkTaio = !r.blkHakai && birthTaioLocal.has(r.blk.n);
-      const blkStr = (r.blkHakai?'✕':blkTaio?'▲':'') + (NUMS[r.blk.n]||r.blk.n) + r.blk.z;
-      head.innerHTML = `<span>${r.calYear}〜　${blkStr}</span><span>▼</span>`;
-      head.onclick = () => { body.classList.toggle('open'); head.querySelector('span:last-child').textContent = body.classList.contains('open') ? '▲' : '▼'; };
-
-      // ボディ
-      const body = document.createElement('div');
-      body.className = 'tainai-memo-body';
-
-      // 期間の意味
-      const periodLabel = document.createElement('div');
-      periodLabel.style.cssText = 'font-size:12px;color:var(--muted);margin-bottom:4px';
-      periodLabel.textContent = 'この期間の意味・特徴';
-      const periodTa = document.createElement('textarea');
-      periodTa.className = 'tainai-memo-input';
-      periodTa.placeholder = 'この波動期間全体の意味や特徴を記入...';
-      periodTa.value = memoData[blkKey]?.period || '';
-      periodTa.oninput = () => {
-        if (!memoData[blkKey]) memoData[blkKey] = {};
-        memoData[blkKey].period = periodTa.value;
-        saveMemo(storageKey, memoData);
-      };
-
-      body.appendChild(periodLabel);
-      body.appendChild(periodTa);
-
-      // 注目年のメモ
-      const yearLabel = document.createElement('div');
-      yearLabel.style.cssText = 'font-size:12px;color:var(--muted);margin:8px 0 4px';
-      yearLabel.textContent = '注目年のメモ（✕▲の年など）';
-      body.appendChild(yearLabel);
-
-      yearRows.filter(rr => rr.mainHakai || (!rr.mainHakai && birthTaioLocal.has(rr.main.n))).forEach(rr => {
-        const row = document.createElement('div');
-        row.className = 'tainai-year-memo';
-        const lbl = document.createElement('span');
-        lbl.className = 'tainai-year-label';
-        const mark = rr.mainHakai ? '✕' : '▲';
-        lbl.textContent = `${rr.calYear} ${mark}${NUMS[rr.main.n]}${rr.main.z}`;
-        if (rr.mainHakai) lbl.style.color = 'var(--hakai)';
-        else lbl.style.color = 'var(--taio)';
-        const inp = document.createElement('input');
-        inp.className = 'tainai-year-input';
-        inp.type = 'text';
-        inp.placeholder = 'メモ...';
-        const yrKey = `yr_${rr.calYear}`;
-        inp.value = memoData[blkKey]?.[yrKey] || '';
-        inp.oninput = () => {
-          if (!memoData[blkKey]) memoData[blkKey] = {};
-          memoData[blkKey][yrKey] = inp.value;
-          saveMemo(storageKey, memoData);
-        };
-        row.appendChild(lbl);
-        row.appendChild(inp);
-        body.appendChild(row);
-      });
-
-      block.appendChild(head);
-      block.appendChild(body);
-      memoArea.appendChild(block);
-    });
-
-    // プレビュー更新
-    updateKanteiPreview();
-  }
 }
 
 function saveMemo(key, data) {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-    const el = document.getElementById('kanteiSaveStatus');
-    if (el) { el.textContent = '保存済み ✓'; setTimeout(()=>el.textContent='', 2000); }
-  } catch(e) {}
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch(e) {}
 }
 
-function updateKanteiPreview() {
-  const name = (document.getElementById('surname')?.value||'') + '　' + (document.getElementById('givenName')?.value||'');
-  const bd = document.getElementById('bd')?.value || '';
-  document.getElementById('previewName').textContent = name || '氏名未入力';
-  document.getElementById('previewDate').textContent = bd ? `生年月日：${bd}` : '';
-  const body = document.getElementById('kanteiText')?.value || '';
-  document.getElementById('previewBody').textContent = body;
-
-  // 波動メモのプレビュー
-  const memoArea = document.getElementById('tainaiMemoArea');
-  const previewMemo = document.getElementById('previewMemo');
-  if (!memoArea || !previewMemo) return;
-  previewMemo.innerHTML = '';
-  memoArea.querySelectorAll('.tainai-memo-block').forEach(block => {
-    const head = block.querySelector('.tainai-memo-head span');
-    const periodTa = block.querySelector('.tainai-memo-input');
-    const yearMemos = block.querySelectorAll('.tainai-year-memo');
-    if (!periodTa?.value && ![...yearMemos].some(r=>r.querySelector('input')?.value)) return;
-    const pb = document.createElement('div');
-    pb.className = 'preview-memo-block';
-    const pt = document.createElement('div');
-    pt.className = 'preview-memo-period';
-    pt.textContent = head?.textContent || '';
-    pb.appendChild(pt);
-    if (periodTa?.value) {
-      const pv = document.createElement('div');
-      pv.className = 'preview-memo-text';
-      pv.textContent = periodTa.value;
-      pb.appendChild(pv);
-    }
-    yearMemos.forEach(row => {
-      const lbl = row.querySelector('.tainai-year-label')?.textContent;
-      const val = row.querySelector('input')?.value;
-      if (val) {
-        const yv = document.createElement('div');
-        yv.className = 'preview-memo-text';
-        yv.style.cssText = 'font-size:12px;margin-top:3px';
-        yv.textContent = `${lbl}：${val}`;
-        pb.appendChild(yv);
-      }
-    });
-    previewMemo.appendChild(pb);
-  });
-}
 
 function calcYM(y,m,d,time,adjY=0,adjM=0){
   if(y<1907||y>2060)return null;
@@ -1703,35 +1540,10 @@ document.getElementById('nbCopyBtn').addEventListener('click', () => {
 });
 
 // 総合鑑定書
-document.getElementById('kanteiText').addEventListener('input', () => {
-  updateKanteiPreview();
-  // 自動保存
-  const key = 'kanteiText_' + (document.getElementById('bd')?.value||'nodate');
-  try { localStorage.setItem(key, document.getElementById('kanteiText').value); } catch(e){}
-  const el = document.getElementById('kanteiSaveStatus');
-  if (el) { el.textContent = '保存済み ✓'; setTimeout(()=>el.textContent='', 2000); }
-});
 
-document.getElementById('kanteiClearBtn').addEventListener('click', () => {
-  if (confirm('鑑定書の内容をクリアしますか？')) {
-    document.getElementById('kanteiText').value = '';
-    updateKanteiPreview();
-  }
-});
 
-document.getElementById('kanteiPdfBtn').addEventListener('click', () => {
-  window.print();
-});
 
 // 生年月日変更時に鑑定書テキストを復元
-document.getElementById('bd').addEventListener('change', () => {
-  const key = 'kanteiText_' + (document.getElementById('bd')?.value||'nodate');
-  try {
-    const saved = localStorage.getItem(key);
-    if (saved) document.getElementById('kanteiText').value = saved;
-    else document.getElementById('kanteiText').value = '';
-  } catch(e){}
-});
 document.querySelectorAll('.mini-btn').forEach(btn=>btn.addEventListener('click',()=>setAdj(btn.dataset.k,Number(btn.dataset.v))));
 ['surname','givenName'].forEach(id=>document.getElementById(id).addEventListener('input',analyze));
 
