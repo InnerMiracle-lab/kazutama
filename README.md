@@ -22,7 +22,7 @@
 ### 📘 簡易版資料
 カズタマ・数霊学の基礎資料です。
 👉 **Inner Miracle｜note**
-https://note.com/inner_miracle
+https://note.com/inner7
 
 ### 📗 専門版資料
 より深く学びたい方・本格的な鑑定を行いたい方は
