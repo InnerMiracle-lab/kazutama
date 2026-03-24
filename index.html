@@ -1034,7 +1034,8 @@ function calcYM(y,m,d,time,adjY=0,adjM=0){
       yN=sm===1?r9n(sy-1):r9n(sy);
       let yZi=(sy-1900)%12;if(yZi<0)yZi+=12;
       yZ=ZOD[yZi];
-      mN=(yN*3+sm-2)%9;if(mN<=0)mN+=9;
+      const mYN=r9n(sy);
+      mN=(mYN*3+sm-2)%9;if(mN<=0)mN+=9;
       const mZi=((sm%12)+12)%12;
       mZ=ZOD[mZi];
     }
@@ -1055,7 +1056,8 @@ function calcYM(y,m,d,time,adjY=0,adjM=0){
     yN=sm===1?r9n(sy-1):r9n(sy);
     let yZi=(sy-1900)%12;if(yZi<0)yZi+=12;
     yZ=ZOD[yZi];
-    mN=(yN*3+sm-2)%9;if(mN<=0)mN+=9;
+    const mYN=r9n(sy);
+    mN=(mYN*3+sm-2)%9;if(mN<=0)mN+=9;
     const mZi=((sm%12)+12)%12;
     mZ=ZOD[mZi];
     boundaryTime=setsuTimeVal;
@@ -1637,12 +1639,18 @@ window.addEventListener('DOMContentLoaded',()=>{
 <footer style="margin-top:48px;padding:24px 20px;background:#f8f9fa;border-top:2px solid #e0e0e0;text-align:center;font-size:13px;color:#666;line-height:2">
   <div style="margin-bottom:8px;font-weight:700;color:#2E75B6;font-size:15px">📚 カズタマ数霊学をさらに深く学ぶ</div>
   <div>
-    <a href="https://note.com/inner_miracle" target="_blank" style="color:#2E75B6;text-decoration:none;margin:0 12px">▶ Inner Miracle｜note（数の手帳）</a>
+    <a href="https://note.com/inner7/n/n8abc371d98a5" target="_blank" style="color:#2E75B6;text-decoration:none;margin:0 12px">▶ Inner Miracle｜note（数の手帳）</a>
   </div>
   <div style="margin-top:6px">
     <a href="https://akatsuki.hp.peraichi.com/school1" target="_blank" style="color:#2E75B6;text-decoration:none;margin:0 12px">▶ スクール・コミュニティのご案内</a>
     <a href="https://utage-system.com/p/gDQ2IH1OTTsM" target="_blank" style="color:#2E75B6;text-decoration:none;margin:0 12px">▶ コミュニティ参加</a>
   </div>
   <div style="margin-top:8px">
-    本格資料・専門的なお問い合わせ：
-    <a href="/cdn-cgi/l/email-protection#d3b2b8b2a7a0a6b8baa1b6bab8b2e293b4beb2babffdb0bcbe" style="color:#2E75B6;text-decoration:none"><span class="__cf_email__" data-cfemail="b0d1dbd1c4c3c5dbd9c2d5d9dbd181f0d7ddd1d9dc9ed3dfdd">[e
+    お問い合わせ：
+    <a href="mailto:akatsukireika1@gmail.com" style="color:#2E75B6;text-decoration:none">akatsukireika1@gmail.com</a>
+    ／
+    <a href="https://akatsukireika.info/form1/" target="_blank" style="color:#2E75B6;text-decoration:none">アマテラス問い合わせフォーム</a>
+  </div>
+</footer>
+</body>
+</html>
