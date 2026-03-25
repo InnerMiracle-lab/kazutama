@@ -776,9 +776,9 @@ function calcTainai(birthYN, birthYZ, birthSy, currentSy, rangeYears, sex) {
   for (let i = 0; i < rangeYears; i++) {
     const calYear = birthSy + i;
 
-    // 毎年波動: 生まれ年は起点、翌年から毎年1ステップ
-    if (i > 0) main = tainaiStep(main, mainDir);
-    if (i > 0) sub  = tainaiStep(sub,  subDir);
+    // 毎年波動: 生まれ年は起点、翌年から毎年1ステップ（男女共通で常に順流+1）
+    if (i > 0) main = tainaiStep(main, +1);
+    if (i > 0) sub  = tainaiStep(sub,  -1);
 
     // 周期波動: cycle年ごとに1ステップ
     const blkStart = (i % cycle === 0);
