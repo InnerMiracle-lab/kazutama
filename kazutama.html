@@ -749,7 +749,7 @@ const TAINAI_CYCLE = {1:10, 2:6, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9};
 
 // 顕在方向を決定
 function tainaiMainDir(birthYN, birthYZ, sex) {
-  const chisuu = isChisuuNen(birthYN);
+  const chisuu = isChisuuNen(birthYN, birthYZ);
   // 天数・人数: 男=+1(順), 女=-1(逆)
   // 地数:      男=-1(逆), 女=+1(順)  ← 反転
   if (sex === 'M') return chisuu ? -1 : +1;

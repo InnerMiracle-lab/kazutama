@@ -755,7 +755,7 @@ const TAINAI_CYCLE = {1:10, 2:6, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9};
 
 // 顕在方向を決定
 function tainaiMainDir(birthYN, birthYZ, sex) {
-  const chisuu = isChisuuNen(birthYN);
+  const chisuu = isChisuuNen(birthYN, birthYZ);
   // 天数・人数: 男=+1(順), 女=-1(逆)
   // 地数:      男=-1(逆), 女=+1(順)  ← 反転
   if (sex === 'M') return chisuu ? -1 : +1;
@@ -782,9 +782,9 @@ function calcTainai(birthYN, birthYZ, birthSy, currentSy, rangeYears, sex) {
   for (let i = 0; i < rangeYears; i++) {
     const calYear = birthSy + i;
 
-    // 毎年波動: 生まれ年は起点、翌年から毎年1ステップ
-    if (i > 0) main = tainaiStep(main, mainDir);
-    if (i > 0) sub  = tainaiStep(sub,  subDir);
+    // 毎年波動: 生まれ年は起点、翌年から毎年1ステップ（男女共通で常に順流+1）
+    if (i > 0) main = tainaiStep(main, +1);
+    if (i > 0) sub  = tainaiStep(sub,  -1);
 
     // 周期波動: cycle年ごとに1ステップ
     const blkStart = (i % cycle === 0);
