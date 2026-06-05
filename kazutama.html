@@ -1582,29 +1582,8 @@ function generateNbData() {
   lines.push(`6. 破壊数：${hakaiArr}`);
   lines.push(`   対応破壊数：${taioArr}`);
   lines.push('');
-  // ⑦ 現在波動情報
-  lines.push('7. 現在波動情報');
-
-  // 現在の波動を取得（renderTainaiで計算済みの行から現在年を探す）
-  const currentWaveInfo = (function() {
-    const tbl = document.getElementById('tainaiTable');
-    if (!tbl) return null;
-    // 現在年の行（★マーク）を探す
-    const nowRow = Array.from(tbl.querySelectorAll('tr')).find(r => r.classList.contains('tc-now'));
-    if (!nowRow) return null;
-    // ブロック先頭行（直前のtc-blk-head）を探す
-    let blkRow = nowRow.previousElementSibling;
-    while (blkRow && !blkRow.classList.contains('tc-blk-head')) {
-      blkRow = blkRow.previousElementSibling;
-    }
-    if (!blkRow) return null;
-    const blkCells = blkRow.querySelectorAll('td');
-    const blkStr = blkCells[1]?.innerHTML || '';
-    // 現在年の波動数・干支
-    const cells = nowRow.querySelectorAll('td');
-    const waveStr = cells[1]?.textContent || '';
-    return { blkStr, waveStr, blkCells, cells };
-  })();
+  // ⑦ 現在の波動情報
+  lines.push('7. 現在の波動情報');
 
   // 数の合局判定
   function numGokyoku(a, b) {
@@ -1634,57 +1613,92 @@ function generateNbData() {
     return pairs.some(([x,y])=>(a===x&&b===y)||(a===y&&b===x));
   }
 
-  // 現在の波動を波動テーブルから取得
-  // g_currentWave をrenderTainaiで設定している場合はそちらを使う
-  if (typeof g_currentWave !== 'undefined' && g_currentWave) {
-    const cw = g_currentWave;
-    const mainN = cw.main.n, mainZ = cw.main.z;   // ブロック顕在
-    const subN  = cw.sub.n,  subZ  = cw.sub.z;    // ブロック潜在
-    const nowN  = cw.nowMain.n, nowZ = cw.nowMain.z; // 毎年波動
-    const mainMark = cw.main.hakai?'✕':cw.main.taio?'▲':'';
-    const subMark  = cw.sub.hakai ?'✕':cw.sub.taio ?'▲':'';
-    const nowMark  = g_hakai.has(nowN)?'✕':g_taio.has(nowN)?'▲':'';
-
-    lines.push(`   現在年：${cw.year}年`);
-    lines.push(`   現在波動（表）：${mainMark}${NUMS[mainN]}${mainZ}`);
-    lines.push(`   現在波動（裏）：${subMark}${NUMS[subN]}${subZ}`);
-    lines.push(`   毎年波動：${nowMark}${NUMS[nowN]}${nowZ}`);
-    lines.push('');
-
-    // 生年数との関係
-    lines.push('   【生年数との関係】');
-
-    // 表波動 × 生年
-    const mg1  = numGokyoku(mainN, nenN);
-    const mzg1 = zodGokyoku(mainZ, nenZ);
-    const mchu1 = zodChu(mainZ, nenZ);
-    lines.push(`   現在波動（表）${mainMark}${NUMS[mainN]}${mainZ} - 生年${NUMS[nenN]}${nenZ}：`);
-    lines.push(`     数の合局：${mg1||'なし'}`);
-    lines.push(`     十二支の合局：${mzg1||'なし'}`);
-    lines.push(`     十二支の冲：${mchu1?'あり（'+mainZ+'－'+nenZ+'）':'なし'}`);
-    lines.push('');
-
-    // 裏波動 × 生年
-    const mg2  = numGokyoku(subN, nenN);
-    const mzg2 = zodGokyoku(subZ, nenZ);
-    const mchu2 = zodChu(subZ, nenZ);
-    lines.push(`   現在波動（裏）${subMark}${NUMS[subN]}${subZ} - 生年${NUMS[nenN]}${nenZ}：`);
-    lines.push(`     数の合局：${mg2||'なし'}`);
-    lines.push(`     十二支の合局：${mzg2||'なし'}`);
-    lines.push(`     十二支の冲：${mchu2?'あり（'+subZ+'－'+nenZ+'）':'なし'}`);
-    lines.push('');
-
-    // 現在波動同士の関係
-    lines.push('   【現在波動同士の関係】');
-    const wg   = numGokyoku(mainN, subN);
-    const wzg  = zodGokyoku(mainZ, subZ);
-    const wchu = zodChu(mainZ, subZ);
-    lines.push(`     数の合局：${wg||'なし'}`);
-    lines.push(`     十二支の合局：${wzg||'なし'}`);
-    lines.push(`     十二支の冲：${wchu?'あり（'+mainZ+'－'+subZ+'）':'なし'}`);
-
-  } else {
+  if (typeof g_currentWave === 'undefined' || !g_currentWave) {
     lines.push('   （波動を表示してから生成してください）');
+  } else {
+    const baseYear = g_currentWave.year;
+    const sex = document.querySelector('input[name=sex]:checked')?.value || 'M';
+    // 今年から5年分を一括計算
+    const endYear = baseYear + 4;
+    const { rows: allRows } = calcTainai(nenN, nenZ, ym.sy, endYear, endYear - ym.sy + 1, sex);
+
+    for (let i = 0; i < 5; i++) {
+      const targetYear = baseYear + i;
+      const targetRow = allRows.find(r => r.calYear === targetYear);
+      if (!targetRow) {
+        if (i > 0) { lines.push('────────────────'); lines.push(`【${targetYear}年】`); }
+        lines.push(`   （${targetYear}年のデータなし）`);
+        continue;
+      }
+
+      const mainN = targetRow.blk.n,    mainZ = targetRow.blk.z;
+      const subN  = targetRow.blkSub.n, subZ  = targetRow.blkSub.z;
+      const nowN  = targetRow.main.n,   nowZ  = targetRow.main.z;
+
+      // 生年年盤のみの破壊数（月盤を含まない）
+      const birthYearHakai = getBirthHakai(nenN, nenZ);
+      const mainHakai = birthYearHakai.has(mainN);
+      const subHakai  = birthYearHakai.has(subN);
+      const nowHakai  = birthYearHakai.has(nowN);
+
+      // 対応破壊（▲）: renderTainai と同じロジック
+      // 「月盤の破壊場が指す年盤の数値」のみが波動の▲対象
+      const birthYearNums = numsArr(nenN);
+      const birthMonthNums = numsArr(tsuN);
+      const birthMonthMetaLocal = meta(birthMonthNums, tsuZ);
+      const bmFieldsLocal = new Set();
+      if (birthMonthMetaLocal.opp5Pos != null) bmFieldsLocal.add(birthMonthMetaLocal.opp5Pos);
+      if (birthMonthMetaLocal.oppZPos  != null) bmFieldsLocal.add(birthMonthMetaLocal.oppZPos);
+      const bothHakai = new Set([...birthYearHakai, ...birthMonthMetaLocal.hakai]);
+      const birthWaveTaioNums = new Set();
+      bmFieldsLocal.forEach(f => {
+        const yv = birthYearNums[f];
+        if (!bothHakai.has(yv)) birthWaveTaioNums.add(yv);
+      });
+      const mainTaio  = !mainHakai && birthWaveTaioNums.has(mainN);
+      const subTaio   = !subHakai  && birthWaveTaioNums.has(subN);
+      const nowTaio   = !nowHakai  && birthWaveTaioNums.has(nowN);
+      const mainMark = mainHakai?'✕':mainTaio?'▲':'';
+      const subMark  = subHakai ?'✕':subTaio ?'▲':'';
+      const nowMark  = nowHakai ?'✕':nowTaio ?'▲':'';
+
+      if (i > 0) {
+        lines.push('────────────────');
+        lines.push(`【${targetYear}年】`);
+      }
+      lines.push(`   今年:${targetYear}年`);
+      lines.push(`   生年波動（表）：${mainMark}${NUMS[mainN]}${mainZ}`);
+      lines.push(`   生年波動（裏）：${subMark}${NUMS[subN]}${subZ}`);
+      lines.push(`   ${targetYear}年：${nowMark}${NUMS[nowN]}${nowZ}`);
+      lines.push('');
+
+      lines.push('   【生年数との関係】');
+      const mg1  = numGokyoku(mainN, nenN);
+      const mzg1 = zodGokyoku(mainZ, nenZ);
+      const mchu1 = zodChu(mainZ, nenZ);
+      lines.push(`   生年波動（表）${mainMark}${NUMS[mainN]}${mainZ} - 生年${NUMS[nenN]}${nenZ}：`);
+      lines.push(`     数の合局：${mg1||'なし'}`);
+      lines.push(`     十二支の合局：${mzg1||'なし'}`);
+      lines.push(`     十二支の冲：${mchu1?'あり（'+mainZ+'－'+nenZ+'）':'なし'}`);
+      lines.push('');
+
+      const mg2  = numGokyoku(subN, nenN);
+      const mzg2 = zodGokyoku(subZ, nenZ);
+      const mchu2 = zodChu(subZ, nenZ);
+      lines.push(`   生年波動（裏）${subMark}${NUMS[subN]}${subZ} - 生年${NUMS[nenN]}${nenZ}：`);
+      lines.push(`     数の合局：${mg2||'なし'}`);
+      lines.push(`     十二支の合局：${mzg2||'なし'}`);
+      lines.push(`     十二支の冲：${mchu2?'あり（'+subZ+'－'+nenZ+'）':'なし'}`);
+      lines.push('');
+
+      lines.push('   【生年波動同士の関係】');
+      const wg   = numGokyoku(mainN, subN);
+      const wzg  = zodGokyoku(mainZ, subZ);
+      const wchu = zodChu(mainZ, subZ);
+      lines.push(`     数の合局：${wg||'なし'}`);
+      lines.push(`     十二支の合局：${wzg||'なし'}`);
+      lines.push(`     十二支の冲：${wchu?'あり（'+mainZ+'－'+subZ+'）':'なし'}`);
+    }
   }
 
   lines.push('');
