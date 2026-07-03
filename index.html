@@ -439,6 +439,19 @@ hr{border:none;border-top:1px solid var(--line);margin:20px 0}
   
 
 <script>
+// 各区分（生年数理＋干支）ごとに、田上先生の原講義録に実在する周期の回数。
+// この回数を超えたら、HADO_PARAにたまたま一致するキーがあっても表示しない。
+const HADO_ROUND_LIMIT = {
+  "1子":13,"1卯":12,"1午":11,"1酉":12,
+  "2丑":13,"2辰":12,"2未":11,"2戌":13,
+  "3寅":21,"3巳":17,"3申":19,"3亥":22,
+  "4子":16,"4卯":17,"4午":14,"4酉":16,
+  "5丑":10,"5辰":12,"5未":13,"5戌":10,
+  "6寅":8, "6巳":10,"6申":10,"6亥":10,
+  "7子":10,"7卯":9, "7午":9, "7酉":9,
+  "8丑":8, "8辰":8, "8未":7, "8戌":8,
+  "9寅":7, "9巳":7, "9申":7, "9亥":8
+};
 const HADO_PARA = {};
 // ════════════════════════════════
 // 画数表（5,856字）
@@ -956,8 +969,12 @@ function renderTainai(birthYN, birthYZ, birthSy, currentSy, sex, birthTaio, birt
         if(pm[exact]) return {key:exact, text:pm[exact]};
         return null;
       }
-      const paraResult    = findPara(birthParaKey, r.blk.z,    r.blk.n);
-      const paraSubResult = findPara(birthParaKey, r.blkSub.z, r.blkSub.n);
+      // この区分（birthParaKey）に本来存在する周期の回数を超えていたら、
+      // HADO_PARAに偶然一致するキーがあっても表示しない（白紙にする）
+      const roundLimit = HADO_ROUND_LIMIT[birthParaKey];
+      const withinLimit = (roundLimit == null) || (bi < roundLimit);
+      const paraResult    = withinLimit ? findPara(birthParaKey, r.blk.z,    r.blk.n)    : null;
+      const paraSubResult = withinLimit ? findPara(birthParaKey, r.blkSub.z, r.blkSub.n) : null;
       // 顕在テキスト
       if (paraResult) {
         const paraDiv = document.createElement('div');
