@@ -833,6 +833,26 @@ function renderTainai(birthYN, birthYZ, birthSy, currentSy, sex, birthTaio, birt
    bmF.forEach(f=>{const yv=_yb.nums[f];if(!_hk.has(yv))taioFromY2.add(yv);});}
   const junHakaiLocal=new Set([...taioFromY2]);
   const junHakaiArr=Array.from(junHakaiLocal).sort((a,b)=>a-b).map(v=>NUMS[v]).join('・');
+
+  // 今年〜3年後（計4年分）の波動をgenerateNbData用に保存
+  {
+    const nowIdx = rows.findIndex(r => r.isNow);
+    if (nowIdx >= 0) {
+      g_futureWaves = [0,1,2,3,4].map(off => {
+        const rr = rows[nowIdx+off];
+        if (!rr) return null;
+        return {
+          year: rr.calYear,
+          main:    {...rr.blk,    hakai: rr.blkHakai,    taio: !rr.blkHakai    && birthTaioLocal.has(rr.blk.n)},
+          sub:     {...rr.blkSub, hakai: rr.blkSubHakai, taio: !rr.blkSubHakai && birthTaioLocal.has(rr.blkSub.n)},
+          nowMain: {...rr.main,   hakai: rr.mainHakai,   taio: !rr.mainHakai   && birthTaioLocal.has(rr.main.n)}
+        };
+      });
+    } else {
+      g_futureWaves = null;
+    }
+  }
+
   desc.innerHTML =
     `生年盤: <b>${NUMS[birthYN]}${birthYZ}</b>${chisuuStr}　周期: <b>${cycle}年</b>　` +
     `破壊数（年）(✕): ${hakaiArrYear||'なし'}　` +
@@ -1657,6 +1677,20 @@ function generateNbData() {
     lines.push(`   毎年波動：${nowMark}${NUMS[nowN]}${nowZ}`);
     lines.push('');
 
+    // 今年〜3年後（計4年分）の波動推移
+    if (typeof g_futureWaves !== 'undefined' && g_futureWaves) {
+      const yearLabels = ['今年','来年','再来年','3年後','4年後'];
+      lines.push('   【今後の波動推移（今年〜4年後）】');
+      g_futureWaves.forEach((fw, i) => {
+        if (!fw) return;
+        const fMainMark = fw.main.hakai    ? '✕' : fw.main.taio    ? '▲' : '';
+        const fSubMark  = fw.sub.hakai     ? '✕' : fw.sub.taio     ? '▲' : '';
+        const fNowMark  = fw.nowMain.hakai ? '✕' : fw.nowMain.taio ? '▲' : '';
+        lines.push(`   ${yearLabels[i]}（${fw.year}年）：表 ${fMainMark}${NUMS[fw.main.n]}${fw.main.z}　－　裏 ${fSubMark}${NUMS[fw.sub.n]}${fw.sub.z}　／　毎年波動 ${fNowMark}${NUMS[fw.nowMain.n]}${fw.nowMain.z}`);
+      });
+      lines.push('');
+    }
+
     // 生年数との関係
     lines.push('   【生年数との関係】');
 
@@ -1704,6 +1738,8 @@ function generateNbData() {
 let base_dN_global = null;
 // 現在年の波動（generateNbDataで使用）
 let g_currentWave = null;
+// 今年〜3年後の波動（generateNbDataで使用）
+let g_futureWaves = null;
 
 document.getElementById('nbGenBtn').addEventListener('click', () => {
   const text = generateNbData();
