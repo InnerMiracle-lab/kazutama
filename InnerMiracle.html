@@ -1213,13 +1213,14 @@ function calcYM(y,m,d,time,adjY=0,adjM=0){
     sy=y; sm=m;
     if(isPre){sm--; if(sm===0){sm=12; sy--;}} // 節入り前の実効月に基準を合わせる（月調整ズレ修正）
     // adjY/adjMによる調整（年盤・月盤ずらし）
+    // ※節入り当日は常に「d>=setsuDay」相当のため、繰り上げ判定は調整後に一度だけ行う（成田さん修正版と同じロジック）
     if(adjY||adjM){
       sy+=adjY; sm+=adjM;
       while(sm<1){sm+=12;sy--;}
-      while(sm>12){sm-=12;sy++;}
-      yN=sm===1?r9n(sy-1):r9n(sy);
-      const yZiBase=sm===1?sy-1:sy;
-      let yZi=(yZiBase-1900)%12;if(yZi<0)yZi+=12;
+      while(sm>13){sm-=12;sy++;}
+      if(sm===1){sm=13;sy--;} // 月調整後にちょうど月1に着地したケースの年ズレ修正
+      yN=r9n(sy);
+      let yZi=(sy-1900)%12;if(yZi<0)yZi+=12;
       yZ=ZOD[yZi];
       const mYN=r9n(sy);
       mN=(mYN*3+sm-2)%9;if(mN<=0)mN+=9;
@@ -1236,13 +1237,17 @@ function calcYM(y,m,d,time,adjY=0,adjM=0){
     }
     setsu=setsuDay;
     sy=y; sm=m;
-    if(setsuDay>0&&d<setsuDay){sm--;if(sm===0){sm=12;sy--;}}
+    const wasPre=setsuDay>0&&d<setsuDay; // 節入り前（前月扱い）かどうかを保持し、繰り上げ処理を二重適用しない
+    if(wasPre){
+      sm--; if(sm===0){sm=12;sy--;}
+      if(sm===1){sm=13;sy--;} // 節入り前の判定だけで月1に着地したケースの年ズレ修正
+    }
     sy+=adjY; sm+=adjM;
     while(sm<1){sm+=12;sy--;}
-    while(sm>12){sm-=12;sy++;}
-    yN=sm===1?r9n(sy-1):r9n(sy);
-    const yZiBase=sm===1?sy-1:sy;
-    let yZi=(yZiBase-1900)%12;if(yZi<0)yZi+=12;
+    while(sm>13){sm-=12;sy++;}
+    if(!wasPre&&sm===1){sm=13;sy--;} // 月調整後にちょうど月1に着地したケースの年ズレ修正（成田さん修正版と同じロジック）
+    yN=r9n(sy);
+    let yZi=(sy-1900)%12;if(yZi<0)yZi+=12;
     yZ=ZOD[yZi];
     const mYN=r9n(sy);
     mN=(mYN*3+sm-2)%9;if(mN<=0)mN+=9;
