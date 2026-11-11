@@ -742,6 +742,8 @@ function isChisuuNen(yN, yZ) {
 
 // 各数理の周期（年）＝『数霊波動論奥義（上）』の主周期（①は五年周期。補助周期十年は使わない）
 const TAINAI_CYCLE = {1:5, 2:6, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9};
+// 補助周期（年）＝『数霊波動論奥義（上）』各章冒頭の「補助周期」。⑦はなし。進め方は主周期と同じ（順・逆に1つずつ）
+const TAINAI_AUX = {1:10, 2:2, 3:6, 4:8, 5:10, 6:3, 7:0, 8:4, 9:3};
 
 // 各数理の周期（年）はすでに上に定義済み
 
@@ -774,6 +776,9 @@ function calcTainai(birthYN, birthYZ, birthSy, currentSy, rangeYears, sex) {
   let sub    = { n: birthYN, z: birthYZ }; // 毎年波動（潜在）
   let blk    = { n: birthYN, z: birthYZ }; // 周期波動（顕在・青枠左）
   let blkSub = { n: birthYN, z: birthYZ }; // 周期波動（潜在・青枠右）
+  const auxCycle = TAINAI_AUX[birthYN] || 0;
+  let aux    = { n: birthYN, z: birthYZ }; // 補助波動（顕在）
+  let auxSub = { n: birthYN, z: birthYZ }; // 補助波動（潜在）
 
   for (let i = 0; i < rangeYears; i++) {
     const calYear = birthSy + i;
@@ -788,6 +793,11 @@ function calcTainai(birthYN, birthYZ, birthSy, currentSy, rangeYears, sex) {
       blk    = tainaiStep(blk,    mainDir);
       blkSub = tainaiStep(blkSub, subDir);
     }
+    const auxStart = auxCycle > 0 && (i % auxCycle === 0);
+    if (i > 0 && auxStart) {
+      aux    = tainaiStep(aux,    mainDir);
+      auxSub = tainaiStep(auxSub, subDir);
+    }
 
     const isNow = (calYear === currentSy);
     rows.push({
@@ -796,6 +806,8 @@ function calcTainai(birthYN, birthYZ, birthSy, currentSy, rangeYears, sex) {
       sub:    {...sub},
       blk:    {...blk},
       blkSub: {...blkSub},
+      auxStart, aux: {...aux}, auxSub: {...auxSub},
+      auxHakai: hakaiSet.has(aux.n), auxSubHakai: hakaiSet.has(auxSub.n),
       mainHakai:   hakaiSet.has(main.n),
       blkHakai:    hakaiSet.has(blk.n),
       blkSubHakai: hakaiSet.has(blkSub.n),
@@ -870,7 +882,15 @@ function renderTainai(birthYN, birthYZ, birthSy, currentSy, sex, birthTaio, birt
   tbl.className = 'tc-table';
   const thead = tbl.createTHead();
   const hrow  = thead.insertRow();
-  ['年度', mainLabel].forEach(t => {
+  const auxCyc = TAINAI_AUX[birthYN] || 0;
+  const ZCHU = {子:'午',丑:'未',寅:'申',卯:'酉',辰:'戌',巳:'亥',午:'子',未:'丑',申:'寅',酉:'卯',戌:'辰',亥:'巳'};
+  // 大クロス：表裏（順逆）の数がそろって生年数に戻るところ（例：⑨－⑨）をピンクで示す
+  const BIGX = '#fde4ec';
+  const isBigX   = (r) => r.blk.n === birthYN && r.blkSub.n === birthYN;
+  const isBigXAux = (r) => r.aux.n === birthYN && r.auxSub.n === birthYN;
+  const auxLabel = (r) => markStr(r.aux.n, r.aux.z, r.auxHakai, false, false) + ' - ' + markStr(r.auxSub.n, r.auxSub.z, r.auxSubHakai, false, false)
+      + (ZCHU[r.aux.z] === r.auxSub.z ? '（冲）' : '');
+  (auxCyc ? ['年度', mainLabel, `補助波動（${auxCyc}年）`] : ['年度', mainLabel]).forEach(t => {
     const th = document.createElement('th'); th.textContent = t; hrow.appendChild(th);
   });
 
@@ -896,6 +916,8 @@ function renderTainai(birthYN, birthYZ, birthSy, currentSy, sex, birthTaio, birt
       const blkStr = markStr(r.blk.n, r.blk.z, r.blkHakai, blkTaio, blkDeltaT);
       const blkSubStr = markStr(r.blkSub.n, r.blkSub.z, r.blkSubHakai, blkSubTaio, blkSubDeltaT);
       // 顕在－潜在 を1セルに表示
+      if (auxCyc) { const tdHA = trH.insertCell(); }
+      if (isBigX(r)) { trH.style.background = BIGX; trH.title = '主波動の大クロス（表裏とも生年数）'; }
       tdHM.innerHTML =
         `<span style="color:${r.blkHakai?'var(--hakai)':blkTaio?'var(--taio)':blkDeltaT?'var(--taio)':'inherit'}">${blkStr}</span>` +
         `<span style="color:var(--muted)"> - </span>` +
@@ -910,7 +932,11 @@ function renderTainai(birthYN, birthYZ, birthSy, currentSy, sex, birthTaio, birt
       g_currentWave = {
         main: {...r.blk, hakai: r.blkHakai, taio: !r.blkHakai && birthTaioLocal.has(r.blk.n)},
         sub:  {...r.blkSub, hakai: r.blkSubHakai, taio: !r.blkSubHakai && birthTaioLocal.has(r.blkSub.n)},
-        nowMain: r.main, year: r.calYear
+        nowMain: r.main, year: r.calYear,
+        aux: auxCyc ? {...r.aux, hakai: r.auxHakai} : null,
+        auxSub: auxCyc ? {...r.auxSub, hakai: r.auxSubHakai} : null,
+        auxFrom: auxCyc ? rows.filter(x => x.auxStart && x.calYear <= r.calYear).slice(-1)[0]?.calYear : null,
+        auxCycle: auxCyc
       };
     }
     if (r.blkStart) tr.style.borderTop = '2px solid var(--blue)';
@@ -921,6 +947,12 @@ function renderTainai(birthYN, birthYZ, birthSy, currentSy, sex, birthTaio, birt
     const tdM = tr.insertCell();
     const mainDelta = !r.mainHakai && !taio && getBirthHakai(r.main.n, r.main.z).has(birthYN);
     tdM.textContent = markStr(r.main.n, r.main.z, r.mainHakai, taio, mainDelta);
+    if (auxCyc) {
+      const tdA = tr.insertCell();
+      if (r.auxStart) { tdA.textContent = auxLabel(r); tdA.style.cssText = 'font-size:12px;color:#555;white-space:nowrap'; }
+      const auxFromRow = auxCyc ? rows.filter(x => x.auxStart && x.calYear <= r.calYear).slice(-1)[0] : null;
+      if (auxFromRow && isBigXAux(auxFromRow)) { tdA.style.background = BIGX; tdA.title = '補助波動の大クロス（表裏とも生年数）'; }
+    }
     if (r.mainHakai)     tdM.className = 'tc-hakai';
     else if (taio)       tdM.className = 'tc-taio';
     else if (mainDelta)  tdM.className = 'tc-taio';
@@ -994,9 +1026,21 @@ function renderTainai(birthYN, birthYZ, birthSy, currentSy, sex, birthTaio, birt
       const blkStr    = (r.blkHakai?'✕':blkTaio?'▲':blkDelta?'△':'')       + (NUMS[r.blk.n]   ||r.blk.n)    + r.blk.z;
       const blkSubStr2= (r.blkSubHakai?'✕':blkSubTaio2?'▲':blkSubDelta?'△':'') + (NUMS[r.blkSub.n]||r.blkSub.n) + r.blkSub.z;
       head.textContent = `${r.calYear}〜 ${blkStr}－${blkSubStr2}`;
+      if (isBigX(r)) head.style.background = BIGX;
 
       const body = document.createElement('div');
       body.className = 'tainai-side-blk-body';
+      if (auxCyc) {
+        const auxRows = blkRows.filter(x => x.auxStart);
+        if (auxRows.length) {
+          const auxDiv = document.createElement('div');
+          auxDiv.style.cssText = 'font-size:11px;color:#666;padding:2px 4px 6px';
+          auxDiv.innerHTML = '補助波動：' + auxRows.map(x => isBigXAux(x)
+            ? `<span style="background:${BIGX};padding:0 3px;border-radius:3px">${x.calYear}〜 ${auxLabel(x)}</span>`
+            : `${x.calYear}〜 ${auxLabel(x)}`).join('／');
+          body.appendChild(auxDiv);
+        }
+      }
 
       // ブロック対応テキスト（手順2）：顕在・潜在の両方を表示
       // 完全一致のみ
@@ -1695,6 +1739,12 @@ function generateNbData() {
     lines.push(`   現在波動（表）：${mainMark}${NUMS[mainN]}${mainZ}`);
     lines.push(`   現在波動（裏）：${subMark}${NUMS[subN]}${subZ}`);
     lines.push(`   毎年波動：${nowMark}${NUMS[nowN]}${nowZ}`);
+    if (cw.aux) {
+      const am = w => (w.hakai ? '✕' : '') + NUMS[w.n] + w.z;
+      lines.push(`   補助波動（${cw.auxCycle}年周期・${cw.auxFrom}年〜）：表 ${am(cw.aux)}　－　裏 ${am(cw.auxSub)}`);
+    } else {
+      lines.push('   補助波動：なし（⑦数年は補助周期なし）');
+    }
     lines.push('');
 
     // 今年〜3年後（計4年分）の波動推移
