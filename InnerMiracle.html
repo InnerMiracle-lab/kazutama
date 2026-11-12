@@ -1649,7 +1649,9 @@ function generateNbData() {
   lines.push(`1. 生年数：${NUMS[nenN]}（${nenZ}）`);
   lines.push(`   生年数理盤：${nenN}が中心`);
   lines.push('');
-  lines.push(`2. 生月数：${NUMS[tsuN]}（${tsuZ}）`);
+  // 節月：寅月＝二月 … 子月＝十二月、丑月＝一月（『数霊波動論奥義』「二月寅と十一月亥」）
+  const SETSU_MONTH = {寅:'二月',卯:'三月',辰:'四月',巳:'五月',午:'六月',未:'七月',申:'八月',酉:'九月',戌:'十月',亥:'十一月',子:'十二月',丑:'一月'};
+  lines.push(`2. 生月数：${NUMS[tsuN]}（${tsuZ}）　節月：${SETSU_MONTH[tsuZ]}生まれ（資料の「○月生まれ」はこの月で読む）`);
   lines.push(`   生年数理盤での場：${fieldOf(tsuN)}`);
   lines.push('');
   lines.push(`3. 表面数理：${surface.map(v=>v).join('・')}　→　命数：${lifeNum}`);
