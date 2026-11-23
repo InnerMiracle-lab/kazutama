@@ -1535,7 +1535,9 @@ function render(){
   const alertEl=document.getElementById('alert');alertEl.textContent='';
   if(!val){alertEl.textContent='日付を入れてください。';return;}
   const [y,m,d]=val.split('-').map(Number);
-  const surfaceDate=new Date(Date.UTC(y,m-1,d+state.adjD));
+  const lateDay=(time&&time>='23:00')?1:0; // 23時以降（子の刻）は翌日として扱う
+  if(lateDay)alertEl.textContent='23時以降のお生まれのため、日は翌日（子の刻）として計算しています（年・月は節入り時刻で判定）。';
+  const surfaceDate=new Date(Date.UTC(y,m-1,d+state.adjD+lateDay));
   const sy=surfaceDate.getUTCFullYear(),sm=surfaceDate.getUTCMonth()+1,sd=surfaceDate.getUTCDate();
   const ym=calcYM(y,m,d,time,state.adjY,state.adjM);
   if(!ym){alertEl.textContent='1907年〜2060年の範囲で入力してください。';return;}
@@ -1732,7 +1734,7 @@ function generateNbData() {
 
   // 表面数理・命数（ym.syで節分前後を正しく反映）
   function r9n(n){let v=Number(n);while(v>9)v=String(v).split('').reduce((a,b)=>a+parseInt(b,10),0);return v===0?9:v;}
-  const surfDate = new Date(Date.UTC(y,m-1,d));
+  const surfDate = new Date(Date.UTC(y,m-1,d+((time&&time>='23:00')?1:0))); // 23時以降は翌日
   const sm=surfDate.getUTCMonth()+1,sd=surfDate.getUTCDate();
   const surface = [ym.yN, r9n(sm), r9n(sd)];
   const lifeNum = r9n(surface[0]+surface[1]+surface[2]);
