@@ -100,7 +100,7 @@ footer{color:var(--muted);font-size:13px;margin-top:40px}
 
 <div id="chapter"></div>
 
-<footer>原文は校正版『数霊波動論奥義（上）』の表記そのままです。ただし波動の流れの（順）（逆）の見出しは、女性の場合のみ、流れの向きで読めるよう付け替えています（原典では女性の見出しが男性と入れ替わっています）。数理盤の▲は「月の盤の▲は、生年の盤の破壊の場に重なる所」という本書の約束事によります。</footer>
+<footer>原文は校正版『数霊波動論奥義（上）』の表記そのままです。ただし手順２の周期の主波動・副波動は、女性の場合のみ入れ替えて表示しています。数理盤の▲は「月の盤の▲は、生年の盤の破壊の場に重なる所」という本書の約束事によります。</footer>
 </div></div>
 
 <script>
@@ -206,14 +206,14 @@ function stepMainKey(step){
   if (!m) return null;
   return m[3] + CIRC[m[1]];
 }
-function flowHTML(flowStr, ch){
+function flowHTML(flowStr, ch, partIdx){
   const steps = flowSteps(flowStr);
   let h = '<div class="frow">';
   steps.forEach((s, i) => {
     if (i) h += '<span class="farr">→</span>';
     const key = stepMainKey(s.replace('……',''));
     const ci = key ? ch.cycles.findIndex(cy => {
-      const mm = cy.label.split('・')[0].replace(/[×△]/g,'');
+      const mm = (cy.label.split('・')[partIdx || 0] || '').replace(/[×△]/g,'');
       return mm === key;
     }) : -1;
     const x = (s.includes('×') || s.includes('✕')) ? ' x' : '';
@@ -233,9 +233,11 @@ function renderChapter(){
   const sex = ch[selSex], other = ch[selSex === 'male' ? 'female' : 'male'];
   const otherName = selSex === 'male' ? '女性' : '男性';
   const otherKey = selSex === 'male' ? 'female' : 'male';
-  // 女性は（順）（逆）の見出しを付け替える（2026-11-26 中尾の決定：女性の降順の流れを（逆）と表示する）
-  const flowsOf = (o, k) => k === 'female' ? { jun: o.gyaku, gyaku: o.jun } : { jun: o.jun, gyaku: o.gyaku };
-  const sf = flowsOf(sex, selSex), of = flowsOf(other, otherKey);
+  const isF = selSex === 'female';
+  const otherIsF = otherKey === 'female';
+  // 流れの各行が、手順２の周期ラベルのどちら側（0=順の列、1=逆の列）に対応するか
+  const junPart = k => k === 'female' ? 1 : 0;
+  const gyakuPart = k => k === 'female' ? 0 : 1;
   let h = '';
   h += '<div class="chapterhead"><h2>' + esc(ch.title) + '</h2>';
   h += '<div class="pg">本p.' + ch.page + '〜</div>';
@@ -243,10 +245,10 @@ function renderChapter(){
   h += '<div class="cyc">' + esc(sex.head) + '</div></div>';
 
   h += '<h2 class="sec">波動の流れ（' + (selSex === 'male' ? '男性' : '女性') + '）</h2>';
-  h += '<div class="flowbox"><div class="fl">（順）</div>' + flowHTML(sf.jun, ch);
-  h += '<div class="fl">（逆）</div>' + flowHTML(sf.gyaku, ch);
+  h += '<div class="flowbox"><div class="fl">（順）</div>' + flowHTML(sex.jun, ch, junPart(selSex));
+  h += '<div class="fl">（逆）</div>' + flowHTML(sex.gyaku, ch, gyakuPart(selSex));
   h += '<p class="note">流れの各年を押すと、その周期（主波動・副波動の盤と原文）が下に開きます。</p></div>';
-  h += '<details class="other"><summary>' + otherName + 'の場合：' + esc(other.head) + '</summary><div class="flowbox"><div class="fl">（順）</div>' + flowHTML(of.jun, ch) + '<div class="fl">（逆）</div>' + flowHTML(of.gyaku, ch) + '</div></details>';
+  h += '<details class="other"><summary>' + otherName + 'の場合：' + esc(other.head) + '</summary><div class="flowbox"><div class="fl">（順）</div>' + flowHTML(other.jun, ch, junPart(otherKey)) + '<div class="fl">（逆）</div>' + flowHTML(other.gyaku, ch, gyakuPart(otherKey)) + '</div></details>';
 
   h += '<h2 class="sec">生年' + ch.num + ch.branch + 'と各月の数理盤</h2>';
   h += '<p class="note">' + esc(ch.note) + '</p>';
@@ -269,10 +271,15 @@ function renderChapter(){
   h += '<h2 class="sec">' + esc(ch.step2Head) + '</h2>';
   ch.step2Intro.forEach(it => h += itemHTML(it, ch));
   ch.cycles.forEach((cy, i) => {
-    h += '<details class="cyc" id="cyc' + i + '"><summary>' + esc(cy.label) + '</summary><div class="cin">';
+    // 女性は手順２の周期で主波動と副波動が入れ替わる（2026-11-26 中尾の指摘）
+    const parts = cy.label.split('・');
+    const dLabel = (isF && parts.length === 2) ? parts[1] + '・' + parts[0] : cy.label;
+    const dParts = dLabel.split('・');
+    h += '<details class="cyc" id="cyc' + i + '"><summary>' + esc(dLabel) + '</summary><div class="cin">';
     if (cy.board) {
-      const parts = cy.label.split('・');
-      h += '<div class="pair"><div class="pb">' + boardHTML(cy.board.a, true) + '<div class="cap">主波動 ' + esc(parts[0] || '') + '</div></div><div class="pb">' + boardHTML(cy.board.b, true) + '<div class="cap">副波動 ' + esc(parts[1] || '') + '</div></div></div>';
+      const bA = isF ? cy.board.b : cy.board.a;
+      const bB = isF ? cy.board.a : cy.board.b;
+      h += '<div class="pair"><div class="pb">' + boardHTML(bA, true) + '<div class="cap">主波動 ' + esc(dParts[0] || '') + '</div></div><div class="pb">' + boardHTML(bB, true) + '<div class="cap">副波動 ' + esc(dParts[1] || '') + '</div></div></div>';
     }
     cy.items.forEach(it => h += itemHTML(it, ch));
     h += '</div></details>';
