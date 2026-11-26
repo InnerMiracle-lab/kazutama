@@ -100,7 +100,7 @@ footer{color:var(--muted);font-size:13px;margin-top:40px}
 
 <div id="chapter"></div>
 
-<footer>原文は校正版『数霊波動論奥義（上）』の表記そのままです。数理盤の▲は「月の盤の▲は、生年の盤の破壊の場に重なる所」という本書の約束事によります。</footer>
+<footer>原文は校正版『数霊波動論奥義（上）』の表記そのままです。ただし波動の流れの（順）（逆）の見出しは、女性の場合のみ、流れの向きで読めるよう付け替えています（原典では女性の見出しが男性と入れ替わっています）。数理盤の▲は「月の盤の▲は、生年の盤の破壊の場に重なる所」という本書の約束事によります。</footer>
 </div></div>
 
 <script>
@@ -232,6 +232,10 @@ function renderChapter(){
   if (!ch) { chapterEl.innerHTML = '<p class="empty">該当する章がありません。</p>'; return; }
   const sex = ch[selSex], other = ch[selSex === 'male' ? 'female' : 'male'];
   const otherName = selSex === 'male' ? '女性' : '男性';
+  const otherKey = selSex === 'male' ? 'female' : 'male';
+  // 女性は（順）（逆）の見出しを付け替える（2026-11-26 中尾の決定：女性の降順の流れを（逆）と表示する）
+  const flowsOf = (o, k) => k === 'female' ? { jun: o.gyaku, gyaku: o.jun } : { jun: o.jun, gyaku: o.gyaku };
+  const sf = flowsOf(sex, selSex), of = flowsOf(other, otherKey);
   let h = '';
   h += '<div class="chapterhead"><h2>' + esc(ch.title) + '</h2>';
   h += '<div class="pg">本p.' + ch.page + '〜</div>';
@@ -239,10 +243,10 @@ function renderChapter(){
   h += '<div class="cyc">' + esc(sex.head) + '</div></div>';
 
   h += '<h2 class="sec">波動の流れ（' + (selSex === 'male' ? '男性' : '女性') + '）</h2>';
-  h += '<div class="flowbox"><div class="fl">（順）</div>' + flowHTML(sex.jun, ch);
-  h += '<div class="fl">（逆）</div>' + flowHTML(sex.gyaku, ch);
+  h += '<div class="flowbox"><div class="fl">（順）</div>' + flowHTML(sf.jun, ch);
+  h += '<div class="fl">（逆）</div>' + flowHTML(sf.gyaku, ch);
   h += '<p class="note">流れの各年を押すと、その周期（主波動・副波動の盤と原文）が下に開きます。</p></div>';
-  h += '<details class="other"><summary>' + otherName + 'の場合：' + esc(other.head) + '</summary><div class="flowbox"><div class="fl">（順）</div>' + flowHTML(other.jun, ch) + '<div class="fl">（逆）</div>' + flowHTML(other.gyaku, ch) + '</div></details>';
+  h += '<details class="other"><summary>' + otherName + 'の場合：' + esc(other.head) + '</summary><div class="flowbox"><div class="fl">（順）</div>' + flowHTML(of.jun, ch) + '<div class="fl">（逆）</div>' + flowHTML(of.gyaku, ch) + '</div></details>';
 
   h += '<h2 class="sec">生年' + ch.num + ch.branch + 'と各月の数理盤</h2>';
   h += '<p class="note">' + esc(ch.note) + '</p>';
