@@ -233,11 +233,6 @@ function renderChapter(){
   const sex = ch[selSex], other = ch[selSex === 'male' ? 'female' : 'male'];
   const otherName = selSex === 'male' ? '女性' : '男性';
   const otherKey = selSex === 'male' ? 'female' : 'male';
-  const isF = selSex === 'female';
-  const otherIsF = otherKey === 'female';
-  // 流れの各行が、手順２の周期ラベルのどちら側（0=順の列、1=逆の列）に対応するか
-  const junPart = k => k === 'female' ? 1 : 0;
-  const gyakuPart = k => k === 'female' ? 0 : 1;
   // 流れの向き（十二支の昇順＝順流、降順＝逆流）を判定し、表・裏の見出しを作る（2026-11-26 中尾の提案）
   const BR = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
   const dirOf = flow => {
@@ -248,6 +243,17 @@ function renderChapter(){
   };
   const omote = flow => '表の波動（' + dirOf(flow) + '）';
   const ura = flow => '裏の波動（' + dirOf(flow) + '）';
+  // 周期ラベルのどちら側が順流（昇順）の列か。⑤丑のように原典で並びが逆の章もあるため、性別ではなく向きで決める
+  const partDir = i => {
+    const bs = ch.cycles.slice(0, 3).map(cy => (cy.label.split('・')[i] || '').replace(/[×△]/g, '')[0]);
+    return (BR.indexOf(bs[1]) - BR.indexOf(bs[0]) + 12) % 12 === 1 ? '順流' : '逆流';
+  };
+  const partAsc = partDir(0) === '順流' ? 0 : 1;
+  const partDesc = 1 - partAsc;
+  // 流れの各行が、手順２の周期ラベルのどちら側に対応するか（向きで決める）
+  const flowPart = flow => dirOf(flow) === '順流' ? partAsc : partDesc;
+  // 主波動の側：男性は順流側、女性は逆流側（2026-11-26 中尾の指摘）
+  const mainPart = k => k === 'female' ? partDesc : partAsc;
   let h = '';
   h += '<div class="chapterhead"><h2>' + esc(ch.title) + '</h2>';
   h += '<div class="pg">本p.' + ch.page + '〜</div>';
@@ -255,10 +261,10 @@ function renderChapter(){
   h += '<div class="cyc">' + esc(sex.head) + '</div></div>';
 
   h += '<h2 class="sec">波動の流れ（' + (selSex === 'male' ? '男性' : '女性') + '）</h2>';
-  h += '<div class="flowbox"><div class="fl">' + omote(sex.jun) + '</div>' + flowHTML(sex.jun, ch, junPart(selSex));
-  h += '<div class="fl">' + ura(sex.gyaku) + '</div>' + flowHTML(sex.gyaku, ch, gyakuPart(selSex));
+  h += '<div class="flowbox"><div class="fl">' + omote(sex.jun) + '</div>' + flowHTML(sex.jun, ch, flowPart(sex.jun));
+  h += '<div class="fl">' + ura(sex.gyaku) + '</div>' + flowHTML(sex.gyaku, ch, flowPart(sex.gyaku));
   h += '<p class="note">流れの各年を押すと、その周期（主波動・副波動の盤と原文）が下に開きます。</p></div>';
-  h += '<details class="other"><summary>' + otherName + 'の場合：' + esc(other.head) + '</summary><div class="flowbox"><div class="fl">' + omote(other.jun) + '</div>' + flowHTML(other.jun, ch, junPart(otherKey)) + '<div class="fl">' + ura(other.gyaku) + '</div>' + flowHTML(other.gyaku, ch, gyakuPart(otherKey)) + '</div></details>';
+  h += '<details class="other"><summary>' + otherName + 'の場合：' + esc(other.head) + '</summary><div class="flowbox"><div class="fl">' + omote(other.jun) + '</div>' + flowHTML(other.jun, ch, flowPart(other.jun)) + '<div class="fl">' + ura(other.gyaku) + '</div>' + flowHTML(other.gyaku, ch, flowPart(other.gyaku)) + '</div></details>';
 
   h += '<h2 class="sec">生年' + ch.num + ch.branch + 'と各月の数理盤</h2>';
   h += '<p class="note">' + esc(ch.note) + '</p>';
@@ -281,14 +287,15 @@ function renderChapter(){
   h += '<h2 class="sec">' + esc(ch.step2Head) + '</h2>';
   ch.step2Intro.forEach(it => h += itemHTML(it, ch));
   ch.cycles.forEach((cy, i) => {
-    // 女性は手順２の周期で主波動と副波動が入れ替わる（2026-11-26 中尾の指摘）
+    // 主波動と副波動：男性は順流側が主、女性は逆流側が主（2026-11-26 中尾の指摘）。並びは向きで決める
     const parts = cy.label.split('・');
-    const dLabel = (isF && parts.length === 2) ? parts[1] + '・' + parts[0] : cy.label;
+    const mp = mainPart(selSex);
+    const dLabel = (mp === 1 && parts.length === 2) ? parts[1] + '・' + parts[0] : cy.label;
     const dParts = dLabel.split('・');
     h += '<details class="cyc" id="cyc' + i + '"><summary>' + esc(dLabel) + '</summary><div class="cin">';
     if (cy.board) {
-      const bA = isF ? cy.board.b : cy.board.a;
-      const bB = isF ? cy.board.a : cy.board.b;
+      const bA = mp === 0 ? cy.board.a : cy.board.b;
+      const bB = mp === 0 ? cy.board.b : cy.board.a;
       h += '<div class="pair"><div class="pb">' + boardHTML(bA, true) + '<div class="cap">主波動 ' + esc(dParts[0] || '') + '</div></div><div class="pb">' + boardHTML(bB, true) + '<div class="cap">副波動 ' + esc(dParts[1] || '') + '</div></div></div>';
     }
     cy.items.forEach(it => h += itemHTML(it, ch));
