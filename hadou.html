@@ -243,7 +243,7 @@ function renderChapter(){
   const dirOf = flow => {
     const st = flowSteps(flow).map(s => s.replace('……',''));
     if (st.length < 2) return '順流';
-    const d = (BR.index(st[1].slice(-1)) - BR.index(st[0].slice(-1)) + 12) % 12;
+    const d = (BR.indexOf(st[1].slice(-1)) - BR.indexOf(st[0].slice(-1)) + 12) % 12;
     return d === 11 ? '逆流' : '順流';
   };
   const omote = flow => '表の波動（' + dirOf(flow) + '）';
