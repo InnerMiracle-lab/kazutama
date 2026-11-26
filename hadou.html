@@ -100,7 +100,7 @@ footer{color:var(--muted);font-size:13px;margin-top:40px}
 
 <div id="chapter"></div>
 
-<footer>原文は校正版『数霊波動論奥義（上）』の表記そのままです。ただし波動の流れの「表の波動／裏の波動」という言い方は原典にはない表現で、順流・逆流を分かりやすく示したものです。手順２の周期の主波動・副波動は、女性の場合のみ入れ替えて表示しています。数理盤の▲は「月の盤の▲は、生年の盤の破壊の場に重なる所」という本書の約束事によります。</footer>
+<footer>原文は校正版『数霊波動論奥義（上）』の表記そのままです。ただし波動の流れの「表の波動／裏の波動」という言い方は原典にはない表現で、順流・逆流を分かりやすく示したものです。手順２の周期の表の波動・裏の波動は、女性の場合は逆流側を表の波動として表示しています。数理盤の▲は「月の盤の▲は、生年の盤の破壊の場に重なる所」という本書の約束事によります。</footer>
 </div></div>
 
 <script>
@@ -263,7 +263,7 @@ function renderChapter(){
   h += '<h2 class="sec">波動の流れ（' + (selSex === 'male' ? '男性' : '女性') + '）</h2>';
   h += '<div class="flowbox"><div class="fl">' + omote(sex.jun) + '</div>' + flowHTML(sex.jun, ch, flowPart(sex.jun));
   h += '<div class="fl">' + ura(sex.gyaku) + '</div>' + flowHTML(sex.gyaku, ch, flowPart(sex.gyaku));
-  h += '<p class="note">流れの各年を押すと、その周期（主波動・副波動の盤と原文）が下に開きます。</p></div>';
+  h += '<p class="note">流れの各年を押すと、その周期（表の波動・裏の波動の盤と原文）が下に開きます。</p></div>';
   h += '<details class="other"><summary>' + otherName + 'の場合：' + esc(other.head) + '</summary><div class="flowbox"><div class="fl">' + omote(other.jun) + '</div>' + flowHTML(other.jun, ch, flowPart(other.jun)) + '<div class="fl">' + ura(other.gyaku) + '</div>' + flowHTML(other.gyaku, ch, flowPart(other.gyaku)) + '</div></details>';
 
   h += '<h2 class="sec">生年' + ch.num + ch.branch + 'と各月の数理盤</h2>';
@@ -296,7 +296,7 @@ function renderChapter(){
     if (cy.board) {
       const bA = mp === 0 ? cy.board.a : cy.board.b;
       const bB = mp === 0 ? cy.board.b : cy.board.a;
-      h += '<div class="pair"><div class="pb">' + boardHTML(bA, true) + '<div class="cap">主波動 ' + esc(dParts[0] || '') + '</div></div><div class="pb">' + boardHTML(bB, true) + '<div class="cap">副波動 ' + esc(dParts[1] || '') + '</div></div></div>';
+      h += '<div class="pair"><div class="pb">' + boardHTML(bA, true) + '<div class="cap">表の波動 ' + esc(dParts[0] || '') + '</div></div><div class="pb">' + boardHTML(bB, true) + '<div class="cap">裏の波動 ' + esc(dParts[1] || '') + '</div></div></div>';
     }
     cy.items.forEach(it => h += itemHTML(it, ch));
     h += '</div></details>';
