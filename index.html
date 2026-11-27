@@ -411,7 +411,7 @@ hr{border:none;border-top:1px solid var(--line);margin:20px 0}
   </div>
 
   <!-- 体内時計 -->
-  <h2>体内時計の波動流</h2>
+  <h2>波動周期</h2>
   <div class="card" id="tainaiBand" style="display:none">
     <div class="small" id="tainaiDesc" style="margin-bottom:8px"></div>
     <div class="tainai-split">
@@ -692,7 +692,7 @@ function chooseDay(y,m,d){
 }
 
 // ════════════════════════════════
-// 体内時計の波動流
+// 波動周期
 // ════════════════════════════════
 
 // 年盤数理の破壊数を求める
@@ -734,7 +734,7 @@ function tainaiMainDir(birthYN, birthYZ, sex) {
   else             return chisuu ? +1 : -1;
 }
 
-// 体内時計の波動流を生成
+// 波動周期を生成
 // 2種類の波動:
 //   blk（周期波動・顕在）: cycle年ごとに1ステップ → 青枠左側
 //   blkSub（周期波動・潜在）: cycle年ごとに1ステップ（逆） → 青枠右側
@@ -1150,7 +1150,7 @@ function render(){
   const ymBirth=calcYM(y,m,d,time,0,0)||ym;
   updateSetsuPanel(ym);
 
-  // 体内時計の波動流を描画
+  // 波動周期を描画
   // 今年の立春基準年を取得（入力された日付から calcYM で得た sy を使う）
   const todayYM = calcYM(
     new Date().getFullYear(),
@@ -1406,8 +1406,8 @@ function generateNbData() {
   lines.push(`6. 破壊数：${hakaiArr}`);
   lines.push(`   対応破壊数：${taioArr}`);
   lines.push('');
-  // ⑦ 現在波動情報
-  lines.push('7. 現在波動情報');
+  // ⑦ 現在の波動情報
+  lines.push('7. 現在の波動情報');
 
   // 現在の波動を取得（renderTainaiで計算済みの行から現在年を探す）
   const currentWaveInfo = (function() {
@@ -1470,8 +1470,8 @@ function generateNbData() {
     const nowMark  = g_hakai.has(nowN)?'✕':g_taio.has(nowN)?'▲':'';
 
     lines.push(`   現在年：${cw.year}年`);
-    lines.push(`   現在波動（表）：${mainMark}${NUMS[mainN]}${mainZ}`);
-    lines.push(`   現在波動（裏）：${subMark}${NUMS[subN]}${subZ}`);
+    lines.push(`   現在の波動（表）：${mainMark}${NUMS[mainN]}${mainZ}`);
+    lines.push(`   現在の波動（裏）：${subMark}${NUMS[subN]}${subZ}`);
     lines.push(`   毎年波動：${nowMark}${NUMS[nowN]}${nowZ}`);
     lines.push('');
 
@@ -1482,7 +1482,7 @@ function generateNbData() {
     const mg1  = numGokyoku(mainN, nenN);
     const mzg1 = zodGokyoku(mainZ, nenZ);
     const mchu1 = zodChu(mainZ, nenZ);
-    lines.push(`   現在波動（表）${mainMark}${NUMS[mainN]}${mainZ} - 生年${NUMS[nenN]}${nenZ}：`);
+    lines.push(`   現在の波動（表）${mainMark}${NUMS[mainN]}${mainZ} - 生年${NUMS[nenN]}${nenZ}：`);
     lines.push(`     数の合局：${mg1||'なし'}`);
     lines.push(`     十二支の合局：${mzg1||'なし'}`);
     lines.push(`     十二支の冲：${mchu1?'あり（'+mainZ+'－'+nenZ+'）':'なし'}`);
@@ -1492,14 +1492,14 @@ function generateNbData() {
     const mg2  = numGokyoku(subN, nenN);
     const mzg2 = zodGokyoku(subZ, nenZ);
     const mchu2 = zodChu(subZ, nenZ);
-    lines.push(`   現在波動（裏）${subMark}${NUMS[subN]}${subZ} - 生年${NUMS[nenN]}${nenZ}：`);
+    lines.push(`   現在の波動（裏）${subMark}${NUMS[subN]}${subZ} - 生年${NUMS[nenN]}${nenZ}：`);
     lines.push(`     数の合局：${mg2||'なし'}`);
     lines.push(`     十二支の合局：${mzg2||'なし'}`);
     lines.push(`     十二支の冲：${mchu2?'あり（'+subZ+'－'+nenZ+'）':'なし'}`);
     lines.push('');
 
-    // 現在波動同士の関係
-    lines.push('   【現在波動同士の関係】');
+    // 現在の波動同士の関係
+    lines.push('   【現在の波動同士の関係】');
     const wg   = numGokyoku(mainN, subN);
     const wzg  = zodGokyoku(mainZ, subZ);
     const wchu = zodChu(mainZ, subZ);
