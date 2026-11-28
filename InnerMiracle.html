@@ -2017,8 +2017,11 @@ function renderCompat() {
       `${nm} さん（${person.y}年${person.m}月${person.d}日生まれ・${sex === 'M' ? '男性' : '女性'}）`;
     drawBaseBoards(prefix, person.base);
     const jp = jinmeiParams(surname, given);
+    const b = person.base;
+    const hakaiSet = new Set([...getBirthHakai(b.yN, b.yZ), ...getBirthHakai(b.mN, b.mZ)]);
+    const mk = v => hakaiSet.has(v) ? '✕' + NUMS[v] : NUMS[v];
     document.getElementById(prefix + 'Info').innerHTML =
-      `名前：${nm}（人名数：${jp ? NUMS[jp.jin] : '―'}）　／　表面数理：${person.base.surface.map(v => NUMS[v]).join(' ')}　／　命数：<b>${NUMS[person.base.life]}</b>`;
+      `名前：${nm}（人名数：${jp ? mk(jp.jin) : '―'}）　／　表面数理：${b.surface.map(mk).join(' ')}　／　命数：<b>${mk(b.life)}</b>　／　破壊数（年盤・月盤）：${hakaiStrOf(hakaiSet)}`;
   };
   fill('ca', A, document.getElementById('caSurname').value, document.getElementById('caGiven').value,
     document.querySelector('input[name=caSex]:checked')?.value || 'M');
