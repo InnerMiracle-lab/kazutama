@@ -471,6 +471,31 @@ hr{border:none;border-top:1px solid var(--line);margin:20px 0}
     </div>
   </div>
 
+  <!-- 命数波動・人名数波動・特殊波動（試作） -->
+  <h2>命数波動・人名数波動・特殊波動（試作）</h2>
+  <div class="card" id="sanpaBand" style="display:none">
+    <div class="small" style="margin-bottom:8px;color:#a33"><b>試作版</b>：原典の表と規則（『数霊運命学入門』『数霊占術講義（２）（３）』）で計算しています。公開版にはまだ入っていません。</div>
+    <h3 style="margin:10px 0 4px">命数波動</h3>
+    <div class="small" id="meisuuDesc" style="margin-bottom:6px"></div>
+    <div style="overflow-x:auto"><table id="meisuuTable" style="border-collapse:collapse;font-size:14px;white-space:nowrap"></table></div>
+    <div class="small" id="meisuuAux" style="margin-top:6px"></div>
+    <h3 style="margin:16px 0 4px">人名数波動</h3>
+    <div class="small" id="jinmeiDesc" style="margin-bottom:6px"></div>
+    <div style="overflow-x:auto"><table id="jinmeiTable" style="border-collapse:collapse;font-size:14px;white-space:nowrap"></table></div>
+    <div class="small" id="jinmeiAux" style="margin-top:6px"></div>
+    <h3 style="margin:16px 0 4px">特殊波動</h3>
+    <div class="small" style="margin-bottom:6px">
+      基数 <select id="spBaseN"></select>
+      十二支 <select id="spBaseZ"></select>
+      周期 <input type="number" id="spCycle" min="1" max="36" value="5" style="width:60px"> 年
+      起点年 <input type="number" id="spOrigin" min="1907" max="2060" style="width:88px"> 年
+      表の流れ <select id="spDir"><option value="1">順流</option><option value="-1">逆流</option></select>
+      <button id="spBtn" type="button">特殊波動を作る</button>
+    </div>
+    <div class="small" id="tokushuDesc" style="margin-bottom:6px"></div>
+    <div style="overflow-x:auto"><table id="tokushuTable" style="border-collapse:collapse;font-size:14px;white-space:nowrap"></table></div>
+  </div>
+
   <!-- NotebookLM用データ出力 -->
   <h2>鑑定データ出力（NotebookLM用）</h2>
   <div class="card" id="nbSection">
@@ -1554,6 +1579,170 @@ function renderHoi(yN,yZ,mN,mZ){
   document.getElementById('hoiKouza').textContent=HOI_DATA.kouza.map(k=>`〔${k[0]}〕${k[1]}`).join('\n\n')+'\n\n出典：'+Object.entries(HOI_DATA.src).map(([a,b])=>a+'＝'+b).join('／');
 }
 
+// ════════════════════════════════
+// 命数波動・人名数波動・特殊波動（試作）
+// 原典：命数波動＝『数霊運命学入門』本p.126-131（生年波動と共通の見方）・
+//       『数霊占術講義（２）』本p.32-34（流れは性別と地数年生まれかで決まる）
+//       人名数波動＝『数霊占術講義（３）』本p.52-58（主周期・補助周期の表、
+//       男女とも順流、基数の支は生年の十二支、同数並列・合局構成の特例）
+// ════════════════════════════════
+// 人名数波動の補助周期（『数霊占術講義（３）』本p.53。⑦は4年）
+const JINMEI_AUX = {1:10, 2:2, 3:6, 4:8, 5:10, 6:3, 7:4, 8:4, 9:3};
+const KYOKU_PAIR = {'1,6':'水局','6,1':'水局','2,7':'火局','7,2':'火局','3,8':'木局','8,3':'木局','4,9':'金局','9,4':'金局'};
+const KYOKU_BASE = {'1,6':1,'6,1':1,'2,7':2,'7,2':2,'3,8':3,'8,3':3,'4,9':4,'9,4':4};
+
+// 汎用波動：基数(baseN)・基数の支(baseZ)・起点年(origin)・主周期(cycle)・表の向き(mainDir)で期間列を作る
+function calcWavePeriods(baseN, baseZ, origin, cycle, mainDir, hakaiSet, years) {
+  const periods = [];
+  let blk = { n: baseN, z: baseZ }, blkSub = { n: baseN, z: baseZ };
+  const nP = Math.ceil(years / cycle);
+  for (let k = 0; k < nP; k++) {
+    if (k > 0) { blk = tainaiStep(blk, mainDir); blkSub = tainaiStep(blkSub, -mainDir); }
+    periods.push({
+      start: origin + k * cycle, end: origin + (k + 1) * cycle - 1,
+      blk: { ...blk }, blkSub: { ...blkSub },
+      blkHakai: hakaiSet.has(blk.n), blkSubHakai: hakaiSet.has(blkSub.n)
+    });
+  }
+  return periods;
+}
+
+function waveMark(n, z, hakai) { return (hakai ? '✕' : '') + (NUMS[n] || n) + z; }
+
+function waveRelation(a, b) {
+  const rel = [];
+  if (a.n === b.n && a.z === b.z) rel.push('表裏同値（クロス）');
+  else {
+    const dz = ((ZOD.indexOf(a.z) - ZOD.indexOf(b.z)) % 12 + 12) % 12;
+    if (dz === 6) rel.push('波動同士冲');
+    const pair = Math.min(a.n, b.n) + ',' + Math.max(a.n, b.n);
+    if (KYOKU_PAIR[pair]) rel.push('波動同士' + KYOKU_PAIR[pair]);
+  }
+  return rel.join('・');
+}
+
+// 期間表を描く。currentSy を含む期間に ★ と背景色
+function renderWavePeriods(tbl, periods, currentSy, mainLabel) {
+  tbl.innerHTML = '';
+  tbl.className = 'tc-table';
+  const thead = tbl.createTHead();
+  const hrow = thead.insertRow();
+  ['期間', mainLabel, '関係'].forEach(t => {
+    const th = document.createElement('th'); th.textContent = t; hrow.appendChild(th);
+  });
+  const tbody = tbl.createTBody();
+  periods.forEach(p => {
+    const tr = tbody.insertRow();
+    const isNow = currentSy >= p.start && currentSy <= p.end;
+    if (isNow) tr.style.background = '#fff6da';
+    const tdP = tr.insertCell();
+    tdP.textContent = (isNow ? '★' : '') + p.start + '〜' + p.end;
+    const tdW = tr.insertCell();
+    tdW.textContent = waveMark(p.blk.n, p.blk.z, p.blkHakai) + ' - ' + waveMark(p.blkSub.n, p.blkSub.z, p.blkSubHakai);
+    const tdR = tr.insertCell();
+    tdR.textContent = waveRelation(p.blk, p.blkSub);
+  });
+}
+
+// 補助波動は一行テキストで出す（現在の期間を中心に前・現在・次の3期間）
+function auxSummary(baseN, baseZ, origin, auxCycle, mainDir, hakaiSet, currentSy) {
+  if (!auxCycle) return '補助波動：なし';
+  const periods = calcWavePeriods(baseN, baseZ, origin, auxCycle, mainDir, hakaiSet, 90);
+  const idx = periods.findIndex(p => currentSy >= p.start && currentSy <= p.end);
+  const show = idx < 0 ? periods.slice(0, 3) : periods.slice(Math.max(0, idx - 1), idx + 2);
+  const fmt = p => `${p.start}〜 ${waveMark(p.blk.n, p.blk.z, p.blkHakai)} - ${waveMark(p.blkSub.n, p.blkSub.z, p.blkSubHakai)}`;
+  return `補助波動（${auxCycle}年周期）：` + show.map(fmt).join('　／　');
+}
+
+function renderSanpa(ymBirth, base, sex, currentSy) {
+  const band = document.getElementById('sanpaBand');
+  if (!band) return;
+  band.style.display = 'block';
+  const origin = ymBirth.sy, baseZ = ymBirth.yZ;
+  const hakaiSet = getBirthHakai(ymBirth.yN, ymBirth.yZ);
+  const hakaiStr = Array.from(hakaiSet).sort((a, b) => a - b).map(v => NUMS[v]).join('・') || 'なし';
+  const RANGE = 90;
+
+  // ── 命数波動 ──
+  const life = base.life;
+  const mCycle = TAINAI_CYCLE[life] || 3;
+  const mAux = TAINAI_AUX[life] || 0;
+  const mDir = tainaiMainDir(ymBirth.yN, ymBirth.yZ, sex);
+  document.getElementById('meisuuDesc').innerHTML =
+    `基数：命数 <b>${NUMS[life]}</b>（支は生年の${baseZ}から）　主周期：<b>${mCycle}年</b>　補助周期：${mAux ? mAux + '年' : 'なし'}　` +
+    `表の流れ：${mDir > 0 ? '順流' : '逆流'}（性別と生年の地数で決定＝生年波動と共通）　破壊数（年盤）✕：${hakaiStr}`;
+  renderWavePeriods(document.getElementById('meisuuTable'),
+    calcWavePeriods(life, baseZ, origin, mCycle, mDir, hakaiSet, RANGE),
+    currentSy, mDir > 0 ? '表の波動（順流）－裏の波動（逆流）' : '表の波動（逆流）－裏の波動（順流）');
+  document.getElementById('meisuuAux').textContent =
+    auxSummary(life, baseZ, origin, mAux, mDir, hakaiSet, currentSy);
+
+  // ── 人名数波動 ──
+  const surname = document.getElementById('surname')?.value || '';
+  const given = document.getElementById('givenName')?.value || '';
+  const jDesc = document.getElementById('jinmeiDesc');
+  const jTbl = document.getElementById('jinmeiTable');
+  const jAuxEl = document.getElementById('jinmeiAux');
+  if (cleanName(surname) && cleanName(given)) {
+    const s = calcPart(surname), g = calcPart(given);
+    const seiN = r9n(s.reducedTotal), meN = r9n(g.reducedTotal);
+    const jin = r9n(s.total + g.total);
+    let wBase = jin, wCycleBase = jin, note = '';
+    const pairKey = seiN + ',' + meN;
+    if (seiN === meN) {
+      wBase = r9n(seiN * 2); wCycleBase = seiN;
+      note = `　※姓数・名数が同数（${NUMS[seiN]}）のため特殊波動：波動数は${NUMS[wBase]}から始まり、周期は同数${NUMS[seiN]}の${TAINAI_CYCLE[seiN]}年（『数霊占術講義（３）』本p.54-55）`;
+    } else if (KYOKU_PAIR[pairKey]) {
+      wBase = KYOKU_BASE[pairKey]; wCycleBase = seiN;
+      note = `　※姓数・名数が${KYOKU_PAIR[pairKey]}の合局構成のため、波動数は${NUMS[wBase]}から始まり、周期は姓数${NUMS[seiN]}の${TAINAI_CYCLE[seiN]}年（『数霊占術講義（３）』本p.58-59）`;
+    }
+    const jCycle = TAINAI_CYCLE[wCycleBase] || 3;
+    const jAux = JINMEI_AUX[wBase] || 0;
+    const missing = (s.missing || []).concat(g.missing || []);
+    jDesc.innerHTML =
+      `基数：人名数 <b>${NUMS[jin]}</b>（姓数 ${NUMS[seiN]}・名数 ${NUMS[meN]}、支は生年の${baseZ}から）　主周期：<b>${jCycle}年</b>　補助周期：${jAux ? jAux + '年' : 'なし'}　` +
+      `表の流れ：順流（男女とも順流）　破壊数（年盤）✕：${hakaiStr}` + note +
+      (missing.length ? `　※画数が不明な文字：${missing.join('・')}` : '');
+    renderWavePeriods(jTbl,
+      calcWavePeriods(wBase, baseZ, origin, jCycle, +1, hakaiSet, RANGE),
+      currentSy, '表の波動（順流）－裏の波動（逆流）');
+    jAuxEl.textContent = auxSummary(wBase, baseZ, origin, jAux, +1, hakaiSet, currentSy);
+  } else {
+    jDesc.textContent = '姓名を入力すると人名数波動を表示します。';
+    jTbl.innerHTML = ''; jAuxEl.textContent = '';
+  }
+
+  // ── 特殊波動（初期値の投入とボタン） ──
+  const spN = document.getElementById('spBaseN'), spZ = document.getElementById('spBaseZ');
+  if (spN && !spN.options.length) {
+    for (let i = 1; i <= 9; i++) { const o = document.createElement('option'); o.value = i; o.textContent = NUMS[i]; spN.appendChild(o); }
+    ZOD.forEach(z => { const o = document.createElement('option'); o.value = z; o.textContent = z; spZ.appendChild(o); });
+  }
+  if (spN) {
+    spN.value = String(life); spZ.value = baseZ;
+    document.getElementById('spCycle').value = mCycle;
+    document.getElementById('spOrigin').value = origin;
+    document.getElementById('spDir').value = String(mDir);
+  }
+  const drawTokushu = () => {
+    const bN = Number(document.getElementById('spBaseN').value) || 1;
+    const bZ = document.getElementById('spBaseZ').value || '子';
+    const cy = Math.max(1, Number(document.getElementById('spCycle').value) || 1);
+    const og = Number(document.getElementById('spOrigin').value) || origin;
+    const dr = Number(document.getElementById('spDir').value) || 1;
+    document.getElementById('tokushuDesc').innerHTML =
+      `基数：<b>${NUMS[bN]}${bZ}</b>　周期：<b>${cy}年</b>　起点年：${og}年　表の流れ：${dr > 0 ? '順流' : '逆流'}　破壊数（年盤）✕：${hakaiStr}`;
+    renderWavePeriods(document.getElementById('tokushuTable'),
+      calcWavePeriods(bN, bZ, og, cy, dr, hakaiSet, RANGE),
+      currentSy, dr > 0 ? '表の波動（順流）－裏の波動（逆流）' : '表の波動（逆流）－裏の波動（順流）');
+  };
+  drawTokushu();
+  if (!window._spBound) {
+    window._spBound = true;
+    document.getElementById('spBtn').addEventListener('click', drawTokushu);
+  }
+}
+
 function render(){
   document.getElementById('adjY').textContent=state.adjY;
   document.getElementById('adjM').textContent=state.adjM;
@@ -1611,6 +1800,7 @@ function render(){
   base.life=r9n(base.surface[0]+base.surface[1]+base.surface[2]);
   base.chok=[base.yN,base.mN,base.dN];
   base.latent=r9n(base.chok[0]+base.chok[1]+base.chok[2]);
+  renderSanpa(ymBirth, base, sex, currentSy);
   // base.yNはcalcYM内で節分前後を正しく計算済みのため上書き不要
   // base.chok[0]はbase.yNを使用しており正しい値
 
