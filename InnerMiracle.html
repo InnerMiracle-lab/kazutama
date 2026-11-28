@@ -496,6 +496,103 @@ hr{border:none;border-top:1px solid var(--line);margin:20px 0}
     <div style="overflow-x:auto"><table id="tokushuTable" style="border-collapse:collapse;font-size:14px;white-space:nowrap"></table></div>
   </div>
 
+  <!-- ブログ用クイック表示（テスト版3機能） -->
+  <h2>ブログ用クイック表示（テスト版）</h2>
+  <div class="card" id="quickBand">
+    <div class="small" style="margin-bottom:8px">名前（任意）・生年月日・性別を入力すると、数理盤と、生年波動・命数波動・人名数波動の「一つ前・現在・一つ後」の3期間だけを表示します。ブログ記事用に、そのまま使えます。</div>
+    <div style="margin-bottom:8px">
+      姓 <input type="text" id="qSurname" placeholder="例：太田" style="width:110px"/>
+      名 <input type="text" id="qGiven" placeholder="例：裕美" style="width:110px"/>
+      生年月日 <input type="date" id="qBd" min="1907-01-01" max="2060-12-31"/>
+      <label style="font-weight:normal"><input type="radio" name="qSex" value="M" checked> 男性</label>
+      <label style="font-weight:normal"><input type="radio" name="qSex" value="F"> 女性</label>
+      <button id="qBtn" type="button">表示</button>
+    </div>
+    <div class="small" id="qAlert" style="color:#a33"></div>
+    <div id="qResult" style="display:none">
+      <h3 id="qHead" style="margin:10px 0 4px"></h3>
+      <div class="boards">
+        <div class="boardwrap"><div class="btitle">【生年盤】</div><div id="qYear" class="board"></div><div id="qYearLabel" class="board-label"></div></div>
+        <div class="boardwrap"><div class="btitle">【生月盤】</div><div id="qMonth" class="board"></div><div id="qMonthLabel" class="board-label"></div></div>
+        <div class="boardwrap"><div class="btitle">【生日盤】</div><div id="qDay" class="board"></div><div id="qDayLabel" class="board-label"></div></div>
+      </div>
+      <div class="small" id="qBaseInfo" style="margin-top:8px"></div>
+      <h3 style="margin:14px 0 4px">生年波動（前・現在・次）</h3>
+      <div class="small" id="qSeinenDesc" style="margin-bottom:6px"></div>
+      <div style="overflow-x:auto"><table id="qSeinenTable" style="border-collapse:collapse;font-size:14px;white-space:nowrap"></table></div>
+      <h3 style="margin:14px 0 4px">命数波動（前・現在・次）</h3>
+      <div class="small" id="qMeisuuDesc" style="margin-bottom:6px"></div>
+      <div style="overflow-x:auto"><table id="qMeisuuTable" style="border-collapse:collapse;font-size:14px;white-space:nowrap"></table></div>
+      <h3 style="margin:14px 0 4px">人名数波動（前・現在・次）</h3>
+      <div class="small" id="qJinmeiDesc" style="margin-bottom:6px"></div>
+      <div style="overflow-x:auto"><table id="qJinmeiTable" style="border-collapse:collapse;font-size:14px;white-space:nowrap"></table></div>
+    </div>
+  </div>
+
+  <!-- 改名（結婚）した日の表示（テスト版3機能） -->
+  <h2>改名（結婚）した日の表示（テスト版）</h2>
+  <div class="card" id="renameBand">
+    <div class="small" style="margin-bottom:8px">改名（結婚）した日を起点に取り直します。その日の数理盤と、改名後の人名数でその日から発動する人名数波動（全期間）を表示します。人名数波動の基数の支は、改名日の年盤の十二支を使います。</div>
+    <div style="margin-bottom:8px">
+      改名（結婚）年月日 <input type="date" id="rDate" min="1907-01-01" max="2060-12-31"/>
+      改名後の姓 <input type="text" id="rSurname" placeholder="例：福岡" style="width:110px"/>
+      名 <input type="text" id="rGiven" placeholder="例：弘美" style="width:110px"/>
+      <button id="rBtn" type="button">表示</button>
+    </div>
+    <div class="small" id="rAlert" style="color:#a33"></div>
+    <div id="rResult" style="display:none">
+      <h3 id="rHead" style="margin:10px 0 4px"></h3>
+      <div class="boards">
+        <div class="boardwrap"><div class="btitle">【年盤】</div><div id="rYear" class="board"></div><div id="rYearLabel" class="board-label"></div></div>
+        <div class="boardwrap"><div class="btitle">【月盤】</div><div id="rMonth" class="board"></div><div id="rMonthLabel" class="board-label"></div></div>
+        <div class="boardwrap"><div class="btitle">【日盤】</div><div id="rDay" class="board"></div><div id="rDayLabel" class="board-label"></div></div>
+      </div>
+      <div class="small" id="rBaseInfo" style="margin-top:8px"></div>
+      <h3 style="margin:14px 0 4px">人名数波動（改名日から発動・全期間）</h3>
+      <div class="small" id="rJinmeiDesc" style="margin-bottom:6px"></div>
+      <div style="overflow-x:auto"><table id="rJinmeiTable" style="border-collapse:collapse;font-size:14px;white-space:nowrap"></table></div>
+      <div class="small" id="rJinmeiAux" style="margin-top:6px"></div>
+    </div>
+  </div>
+
+  <!-- 相性表示（テスト版3機能） -->
+  <h2>相性表示（テスト版）</h2>
+  <div class="card" id="compatBand">
+    <div class="small" style="margin-bottom:8px">二人の数理盤を上下に並べて表示します。それぞれに名前（人名数）・表面数理・命数を付けます。</div>
+    <div style="margin-bottom:6px">
+      一人目　姓 <input type="text" id="caSurname" placeholder="例：太田" style="width:110px"/>
+      名 <input type="text" id="caGiven" placeholder="例：裕美" style="width:110px"/>
+      生年月日 <input type="date" id="caBd" min="1907-01-01" max="2060-12-31"/>
+      <label style="font-weight:normal"><input type="radio" name="caSex" value="M" checked> 男性</label>
+      <label style="font-weight:normal"><input type="radio" name="caSex" value="F"> 女性</label>
+    </div>
+    <div style="margin-bottom:8px">
+      二人目　姓 <input type="text" id="cbSurname" placeholder="例：田中" style="width:110px"/>
+      名 <input type="text" id="cbGiven" placeholder="例：晴彦" style="width:110px"/>
+      生年月日 <input type="date" id="cbBd" min="1907-01-01" max="2060-12-31"/>
+      <label style="font-weight:normal"><input type="radio" name="cbSex" value="M" checked> 男性</label>
+      <label style="font-weight:normal"><input type="radio" name="cbSex" value="F"> 女性</label>
+      <button id="cBtn" type="button">表示</button>
+    </div>
+    <div class="small" id="cAlert" style="color:#a33"></div>
+    <div id="cResult" style="display:none">
+      <h3 id="caName" style="margin:12px 0 4px"></h3>
+      <div class="boards">
+        <div class="boardwrap"><div class="btitle">【年盤】</div><div id="caYear" class="board"></div><div id="caYearLabel" class="board-label"></div></div>
+        <div class="boardwrap"><div class="btitle">【月盤】</div><div id="caMonth" class="board"></div><div id="caMonthLabel" class="board-label"></div></div>
+        <div class="boardwrap"><div class="btitle">【日盤】</div><div id="caDay" class="board"></div><div id="caDayLabel" class="board-label"></div></div>
+      </div>
+      <div class="small" id="caInfo" style="margin-top:8px"></div>
+      <h3 id="cbName" style="margin:18px 0 4px"></h3>
+      <div class="boards">
+        <div class="boardwrap"><div class="btitle">【年盤】</div><div id="cbYear" class="board"></div><div id="cbYearLabel" class="board-label"></div></div>
+        <div class="boardwrap"><div class="btitle">【月盤】</div><div id="cbMonth" class="board"></div><div id="cbMonthLabel" class="board-label"></div></div>
+        <div class="boardwrap"><div class="btitle">【日盤】</div><div id="cbDay" class="board"></div><div id="cbDayLabel" class="board-label"></div></div>
+      </div>
+      <div class="small" id="cbInfo" style="margin-top:8px"></div>
+    </div>
+  </div>
+
   <!-- NotebookLM用データ出力 -->
   <h2>鑑定データ出力（NotebookLM用）</h2>
   <div class="card" id="nbSection">
@@ -1742,6 +1839,196 @@ function renderSanpa(ymBirth, base, sex, currentSy) {
     document.getElementById('spBtn').addEventListener('click', drawTokushu);
   }
 }
+
+// ════════════════════════════════
+// テスト版3機能（2026-11-28追加）
+// 1. ブログ用クイック表示／2. 改名（結婚）した日の表示／3. 相性表示
+// 計算は既存の calcYM・chooseDay・numsArr・meta・drawBoard・calcPart・
+// getBirthHakai・tainaiMainDir・calcWavePeriods・renderWavePeriods・auxSummary を再利用する
+// ════════════════════════════════
+
+// 今年の立春基準年（メイン画面の render() と同じ求め方）
+function currentSetsuYear() {
+  const t = new Date();
+  const ym = calcYM(t.getFullYear(), t.getMonth() + 1, t.getDate(), '', 0, 0);
+  return ym ? ym.sy : t.getFullYear();
+}
+
+// 日付から盤・表面数理・命数・潜在命数を既存関数で組み立てる（render() の組み立てと同じ）
+function buildBase(y, m, d) {
+  const ym = calcYM(y, m, d, '', 0, 0);
+  if (!ym) return null;
+  const day = chooseDay(y, m, d).chosen;
+  const base = { yN: ym.yN, yZ: ym.yZ, mN: ym.mN, mZ: ym.mZ, dN: day.n, dZ: day.z, sy: ym.sy,
+    surface: [ym.yN, r9n(m), r9n(d)] };
+  base.life = r9n(base.surface[0] + base.surface[1] + base.surface[2]);
+  base.chok = [base.yN, base.mN, base.dN];
+  base.latent = r9n(base.chok[0] + base.chok[1] + base.chok[2]);
+  base.boards = [{ n: base.yN, z: base.yZ }, { n: base.mN, z: base.mZ }, { n: base.dN, z: base.dZ }];
+  base.boards.forEach(b => { b.nums = numsArr(b.n); b.meta = meta(b.nums, b.z); b.triangles = new Set(); });
+  return base;
+}
+
+// 3盤を描く（要素IDは prefix+'Year'/'Month'/'Day'、ラベルは prefix+'YearLabel' 等）
+function drawBaseBoards(prefix, base) {
+  drawBoard(prefix + 'Year', base.boards[0]);
+  drawBoard(prefix + 'Month', base.boards[1]);
+  drawBoard(prefix + 'Day', base.boards[2]);
+  const setL = (id, b, lbl) => { const el = document.getElementById(id); if (el) el.textContent = b.n + b.z + '　' + lbl; };
+  setL(prefix + 'YearLabel', base.boards[0], '年');
+  setL(prefix + 'MonthLabel', base.boards[1], '月');
+  setL(prefix + 'DayLabel', base.boards[2], '日');
+}
+
+function hakaiStrOf(hakaiSet) {
+  return Array.from(hakaiSet).sort((a, b) => a - b).map(v => NUMS[v]).join('・') || 'なし';
+}
+
+function waveDirLabel(dir) {
+  return dir > 0 ? '表の波動（順流）－裏の波動（逆流）' : '表の波動（逆流）－裏の波動（順流）';
+}
+
+// 人名数波動のパラメータ（試作 renderSanpa と同じ規則：同数並列・合局構成の特例を含む）
+function jinmeiParams(surname, given) {
+  if (!cleanName(surname) || !cleanName(given)) return null;
+  const s = calcPart(surname), g = calcPart(given);
+  const seiN = r9n(s.reducedTotal), meN = r9n(g.reducedTotal);
+  const jin = r9n(s.total + g.total);
+  let wBase = jin, wCycleBase = jin, note = '';
+  const pairKey = seiN + ',' + meN;
+  if (seiN === meN) {
+    wBase = r9n(seiN * 2); wCycleBase = seiN;
+    note = `姓数・名数が同数（${NUMS[seiN]}）のため特殊波動：波動数は${NUMS[wBase]}から始まり、周期は同数${NUMS[seiN]}の${TAINAI_CYCLE[seiN]}年`;
+  } else if (KYOKU_PAIR[pairKey]) {
+    wBase = KYOKU_BASE[pairKey]; wCycleBase = seiN;
+    note = `姓数・名数が${KYOKU_PAIR[pairKey]}の合局構成のため、波動数は${NUMS[wBase]}から始まり、周期は姓数${NUMS[seiN]}の${TAINAI_CYCLE[seiN]}年`;
+  }
+  return { jin, seiN, meN, wBase, cycle: TAINAI_CYCLE[wCycleBase] || 3, aux: JINMEI_AUX[wBase] || 0,
+    note, missing: (s.missing || []).concat(g.missing || []) };
+}
+
+// 現在の期間を中心に、前・現在・次の3期間だけを抜き出す
+function wave3Periods(baseN, baseZ, origin, cycle, dir, hakaiSet, currentSy) {
+  const years = Math.max((currentSy - origin) + cycle * 3, cycle * 3);
+  const periods = calcWavePeriods(baseN, baseZ, origin, cycle, dir, hakaiSet, years);
+  const idx = periods.findIndex(p => currentSy >= p.start && currentSy <= p.end);
+  if (idx < 0) return periods.slice(0, 3);
+  return periods.slice(Math.max(0, idx - 1), idx + 2);
+}
+
+// ── 1. ブログ用クイック表示 ──
+function renderQuick() {
+  const alertEl = document.getElementById('qAlert');
+  const val = document.getElementById('qBd').value;
+  if (!val) { alertEl.textContent = '生年月日を入れてください。'; return; }
+  const [y, m, d] = val.split('-').map(Number);
+  const base = buildBase(y, m, d);
+  if (!base) { alertEl.textContent = '1907年〜2060年の範囲で入力してください。'; return; }
+  alertEl.textContent = '';
+  const sex = document.querySelector('input[name=qSex]:checked')?.value || 'M';
+  const csy = currentSetsuYear();
+  const hakaiSet = getBirthHakai(base.yN, base.yZ);
+  const surname = document.getElementById('qSurname').value;
+  const given = document.getElementById('qGiven').value;
+  const fullName = cleanName(surname) + cleanName(given);
+  document.getElementById('qResult').style.display = 'block';
+  document.getElementById('qHead').textContent =
+    (fullName ? fullName + ' さん　' : '') + `${y}年${m}月${d}日生まれ（${sex === 'M' ? '男性' : '女性'}）`;
+  drawBaseBoards('q', base);
+  document.getElementById('qBaseInfo').innerHTML =
+    `表面数理：${base.surface.map(v => NUMS[v]).join(' ')} → 命数 <b>${NUMS[base.life]}</b>　／　直霊の並び：${base.chok.map(v => NUMS[v]).join(' ')} → 潜在命数 <b>${NUMS[base.latent]}</b>　／　破壊数（年盤）✕：${hakaiStrOf(hakaiSet)}`;
+  // 生年波動（3期間）
+  const sDir = tainaiMainDir(base.yN, base.yZ, sex), sCycle = TAINAI_CYCLE[base.yN] || 3;
+  document.getElementById('qSeinenDesc').textContent =
+    `基数：生年数 ${NUMS[base.yN]}${base.yZ}　主周期：${sCycle}年　表の流れ：${sDir > 0 ? '順流' : '逆流'}`;
+  renderWavePeriods(document.getElementById('qSeinenTable'),
+    wave3Periods(base.yN, base.yZ, base.sy, sCycle, sDir, hakaiSet, csy), csy, waveDirLabel(sDir));
+  // 命数波動（3期間）
+  const life = base.life, mCycle = TAINAI_CYCLE[life] || 3, mDir = tainaiMainDir(base.yN, base.yZ, sex);
+  document.getElementById('qMeisuuDesc').textContent =
+    `基数：命数 ${NUMS[life]}（支は生年の${base.yZ}から）　主周期：${mCycle}年　表の流れ：${mDir > 0 ? '順流' : '逆流'}`;
+  renderWavePeriods(document.getElementById('qMeisuuTable'),
+    wave3Periods(life, base.yZ, base.sy, mCycle, mDir, hakaiSet, csy), csy, waveDirLabel(mDir));
+  // 人名数波動（3期間）
+  const jp = jinmeiParams(surname, given);
+  const jDesc = document.getElementById('qJinmeiDesc'), jTbl = document.getElementById('qJinmeiTable');
+  if (jp) {
+    jDesc.textContent =
+      `基数：人名数 ${NUMS[jp.jin]}（姓数 ${NUMS[jp.seiN]}・名数 ${NUMS[jp.meN]}、支は生年の${base.yZ}から）　主周期：${jp.cycle}年　表の流れ：順流（男女とも順流）` +
+      (jp.note ? '　※' + jp.note : '') + (jp.missing.length ? `　※画数が不明な文字：${jp.missing.join('・')}` : '');
+    renderWavePeriods(jTbl,
+      wave3Periods(jp.wBase, base.yZ, base.sy, jp.cycle, +1, hakaiSet, csy), csy, waveDirLabel(+1));
+  } else {
+    jDesc.textContent = '姓名を入力すると人名数波動を表示します。';
+    jTbl.innerHTML = '';
+  }
+}
+
+// ── 2. 改名（結婚）した日の表示 ──
+// 人名数波動の基数の支は、改名日の年盤の十二支。起点年は改名日の節入り基準年。
+function renderRename() {
+  const alertEl = document.getElementById('rAlert');
+  const val = document.getElementById('rDate').value;
+  if (!val) { alertEl.textContent = '改名（結婚）年月日を入れてください。'; return; }
+  const [y, m, d] = val.split('-').map(Number);
+  const base = buildBase(y, m, d);
+  if (!base) { alertEl.textContent = '1907年〜2060年の範囲で入力してください。'; return; }
+  const surname = document.getElementById('rSurname').value;
+  const given = document.getElementById('rGiven').value;
+  const jp = jinmeiParams(surname, given);
+  if (!jp) { alertEl.textContent = '改名後の姓名（姓と名）を入力してください。'; return; }
+  alertEl.textContent = '';
+  const csy = currentSetsuYear();
+  const hakaiSet = getBirthHakai(base.yN, base.yZ);
+  document.getElementById('rResult').style.display = 'block';
+  document.getElementById('rHead').textContent =
+    `${y}年${m}月${d}日（起点の年：${base.sy}年）　改名後の姓名：${cleanName(surname)} ${cleanName(given)}`;
+  drawBaseBoards('r', base);
+  document.getElementById('rBaseInfo').innerHTML =
+    `表面数理：${base.surface.map(v => NUMS[v]).join(' ')} → 命数 <b>${NUMS[base.life]}</b>　／　直霊の並び：${base.chok.map(v => NUMS[v]).join(' ')} → 潜在命数 <b>${NUMS[base.latent]}</b>　／　破壊数（年盤）✕：${hakaiStrOf(hakaiSet)}`;
+  document.getElementById('rJinmeiDesc').innerHTML =
+    `基数：人名数 <b>${NUMS[jp.jin]}</b>（姓数 ${NUMS[jp.seiN]}・名数 ${NUMS[jp.meN]}）　主周期：<b>${jp.cycle}年</b>　補助周期：${jp.aux ? jp.aux + '年' : 'なし'}　` +
+    `表の流れ：順流（男女とも順流）　基数の支：改名日の年盤の${base.yZ}　起点年：${base.sy}年　破壊数（年盤）✕：${hakaiStrOf(hakaiSet)}` +
+    (jp.note ? '　※' + jp.note : '') + (jp.missing.length ? `　※画数が不明な文字：${jp.missing.join('・')}` : '');
+  renderWavePeriods(document.getElementById('rJinmeiTable'),
+    calcWavePeriods(jp.wBase, base.yZ, base.sy, jp.cycle, +1, hakaiSet, 90),
+    csy, waveDirLabel(+1));
+  document.getElementById('rJinmeiAux').textContent =
+    auxSummary(jp.wBase, base.yZ, base.sy, jp.aux, +1, hakaiSet, csy);
+}
+
+// ── 3. 相性表示 ──
+function renderCompat() {
+  const alertEl = document.getElementById('cAlert');
+  const read = bdId => {
+    const v = document.getElementById(bdId).value;
+    if (!v) return null;
+    const [y, m, d] = v.split('-').map(Number);
+    const base = buildBase(y, m, d);
+    return base ? { y, m, d, base } : null;
+  };
+  const A = read('caBd'), B = read('cbBd');
+  if (!A || !B) { alertEl.textContent = '二人の生年月日を入れてください（1907年〜2060年）。'; return; }
+  alertEl.textContent = '';
+  document.getElementById('cResult').style.display = 'block';
+  const fill = (prefix, person, surname, given, sex) => {
+    const nm = (cleanName(surname) + cleanName(given)) || '（名前未入力）';
+    document.getElementById(prefix + 'Name').textContent =
+      `${nm} さん（${person.y}年${person.m}月${person.d}日生まれ・${sex === 'M' ? '男性' : '女性'}）`;
+    drawBaseBoards(prefix, person.base);
+    const jp = jinmeiParams(surname, given);
+    document.getElementById(prefix + 'Info').innerHTML =
+      `名前：${nm}（人名数：${jp ? NUMS[jp.jin] : '―'}）　／　表面数理：${person.base.surface.map(v => NUMS[v]).join(' ')}　／　命数：<b>${NUMS[person.base.life]}</b>`;
+  };
+  fill('ca', A, document.getElementById('caSurname').value, document.getElementById('caGiven').value,
+    document.querySelector('input[name=caSex]:checked')?.value || 'M');
+  fill('cb', B, document.getElementById('cbSurname').value, document.getElementById('cbGiven').value,
+    document.querySelector('input[name=cbSex]:checked')?.value || 'M');
+}
+
+document.getElementById('qBtn').addEventListener('click', renderQuick);
+document.getElementById('rBtn').addEventListener('click', renderRename);
+document.getElementById('cBtn').addEventListener('click', renderCompat);
 
 function render(){
   document.getElementById('adjY').textContent=state.adjY;
